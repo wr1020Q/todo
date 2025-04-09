@@ -1,9 +1,8 @@
 import { createContext, useReducer, useEffect, useRef } from "react";
 import CryptoJS from "crypto-js";
 import DOMPurify from "dompurify";
-// const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
-const SECRET_KEY = "my_super_secret_key"
-console.log("CONTEXT",SECRET_KEY);
+// console.log("CONTEXT",SECRET_KEY);
+const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
 export const TaskContext = createContext();
 
 const initialState = {
@@ -33,7 +32,7 @@ const taskReducer = (state, action) => {
                   id: Date.now(),
                   text: action.payload.text,
                   completed: false,
-                  priority: action.payload.priority,
+                  priority: Number(action.payload.priority),
                   category: action.payload.category,
                   dueDate: action.payload.dueDate,
                 },

@@ -7,14 +7,28 @@ export default function TaskListWrapper({ categories,editText,dueDate,removeCate
   const { tasks, categoryFilter, sortBy } = state;
   const [searchQuery, setSearchQuery] = useState("");
 
-  // カテゴリとキーワードでフィルター
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    const result = tasks.filter((task) => {
+      const text = (task.text ?? "").toLowerCase();
+      const keyword = searchQuery.toLowerCase();
       const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(task.category);
-      const matchesKeyword = (task.title ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesKeyword = searchQuery.trim() === "" || text.includes(keyword);
+  
+      // console.log({
+      //   text,
+      //   keyword,
+      //   matchesCategory,
+      //   matchesKeyword,
+      //   included: matchesCategory && matchesKeyword,
+      // });
+  
       return matchesCategory && matchesKeyword;
     });
+  
+    return result;
   }, [tasks, categoryFilter, searchQuery]);
+
+  console.log("filteredTasks:", filteredTasks);
 
   const sortedTasks = useMemo(() => {
     return [...filteredTasks].sort((a, b) => {

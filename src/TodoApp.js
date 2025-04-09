@@ -20,7 +20,7 @@ export default function TodoApp() {
 
   const isFirstRender = useRef(true);
   const [task, setTask] = useState("");
-  const [priority, setPriority] = useState("中");
+  const [priority, setPriority] = useState(2);
 
   const{
     categories,
@@ -36,12 +36,16 @@ export default function TodoApp() {
 
   
   const handleAddTask = (text, priority, category, dueDate) => {
+    console.log("handleAddTask:priority",priority)
+    const value = Number(priority);
+    console.log("選択された優先度:", value);
+
     dispatch({
       type: "ADD_TASK",
-      payload: { text, priority, category, dueDate },
+      payload: { text, priority:value, category, dueDate },
     });
     setTask("");
-    setPriority("中");
+    setPriority(2);
     setSelectedCategory(categories[0] || "");
     dispatch({ type: "SET_DUE_DATE", payload: "" });
   };
@@ -75,9 +79,6 @@ export default function TodoApp() {
     dispatch({ type: "INIT_TASKS", payload: updatedTasks });
   };
 
-  // const filteredTasks = tasks.filter((task) =>
-  //   categoryFilter.length === 0 || categoryFilter.includes(task.category)
-  // );
   const handleCategoryFilterChange = (category) => {
     
     const updatedFilter = categoryFilter.includes(category)
@@ -107,7 +108,7 @@ export default function TodoApp() {
         task={task}
         setTask={setTask}
         priority={priority}
-        handlePriorityChange={(e) => setPriority(e.target.value)} 
+        handlePriorityChange={(e) => setPriority(Number(e.target.value))} 
         setPriority={setPriority}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
@@ -119,25 +120,6 @@ export default function TodoApp() {
         categoryFilter={categoryFilter}
       />
 
-      {/* <TaskList
-        tasks={tasks}
-        categories={categories}
-        editText={editText}
-        setEditText={(text) => dispatch({ type: "START_EDITING", payload: { id: null, text } })}
-        startEditing={(id, text) => dispatch({ type: "START_EDITING", payload: { id, text } })}
-        saveEdit={(id) => dispatch({ type: "SAVE_EDIT", payload: { id } })}
-        toggleTask={(id) => dispatch({ type: "TOGGLE_TASK", payload: { id } })}
-        toggleComplete={(id) => dispatch({ type: "TOGGLE_COMPLETE", payload: { id } })}
-        deleteTask={(id) => dispatch({ type: "DELETE_TASK", payload: { id } })}
-        updatePriority={(id, newPriority) =>
-          dispatch({ type: "UPDATE_PRIORITY", payload: { id, newPriority } })
-        }
-        removeCategory={removeCategory}
-        dueDate={dueDate}
-        updateDueDate={(id, dueDate) =>
-          dispatch({ type: "UPDATE_DUE_DATE", payload: { id, dueDate } })}
-          categoryFilter={categoryFilter}
-      /> */}
       <TaskListWrapper
           categories={categories}
           editText={editText}

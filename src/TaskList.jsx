@@ -24,9 +24,6 @@ export default function TaskList({
   console.log("受け取ったLIST内 tasks:", tasks);
   console.log("受け取ったLIST内 categories:", categories);
 
-  // const TaskListWrapper = () => {
-  //   const { state, dispatch } = useTaskContext();
-  //   const { tasks, categoryFilter, sortBy } = state;
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) =>
@@ -34,22 +31,6 @@ export default function TaskList({
     );
   }, [tasks, categoryFilter]);
 
-  // const sortedTasks = useMemo(() => {
-  //   return [...filteredTasks].sort((a, b) => {
-  //     switch (sortBy) {
-  //       case "deadlineAsc":
-  //         return new Date(a.dueDate) - new Date(b.dueDate);
-  //       case "deadlineDesc":
-  //         return new Date(b.dueDate) - new Date(a.dueDate);
-  //       case "priority":
-  //         return b.priority - a.priority;
-  //       case "createdAtDesc":
-  //         return new Date(b.id) - new Date(a.id); 
-  //       default:
-  //         return 0;
-  //     }
-  //   });
-  // }, [filteredTasks, sortBy]);
   
   return (
     <div>
@@ -112,9 +93,9 @@ export default function TaskList({
                         onChange={(e) =>updatePriority(task.id, e.target.value)}
                         className="border p-1 rounded text-sm mr-2"
                       >
-                        <option value="高">高</option>
-                        <option value="中">中</option>
-                        <option value="低">低</option>
+                        <option value={1}>高</option>
+                        <option value={2}>中</option>
+                        <option value={3}>低</option>
                       </select>
                       <input
                         type="date"

@@ -26,12 +26,12 @@ export default function TaskInput({
       />
       <select 
         value={priority ?? ""} 
-        onChange={handlePriorityChange} 
+        onChange={handlePriorityChange}  
         className="border p-2 rounded"
       >
-        <option value="高">高</option>
-        <option value="中">中</option>
-        <option value="低">低</option>
+        <option value={1}>高</option>
+        <option value={2}>中</option>
+        <option value={3}>低</option>
       </select>
       <select 
         value={selectedCategory ?? ""} 
