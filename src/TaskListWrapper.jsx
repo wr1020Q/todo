@@ -28,7 +28,7 @@ export default function TaskListWrapper({ categories,editText,dueDate,removeCate
     return result;
   }, [tasks, categoryFilter, searchQuery]);
 
-  console.log("filteredTasks:", filteredTasks);
+  console.log("filteredTasks W:", filteredTasks);
 
   const sortedTasks = useMemo(() => {
     return [...filteredTasks].sort((a, b) => {

@@ -11,6 +11,9 @@ import CategoryInput from "./CategoryInput";
 import { useContext } from "react"; 
 import TaskListWrapper from "./TaskListWrapper";
 // const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import CalendarTodo from "./Calender";
 
 
 export default function TodoApp() {
@@ -21,6 +24,7 @@ export default function TodoApp() {
   const isFirstRender = useRef(true);
   const [task, setTask] = useState("");
   const [priority, setPriority] = useState(2);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const{
     categories,
@@ -53,15 +57,12 @@ export default function TodoApp() {
   useEffect(() => {
     if (isFirstRender.current) return; 
     
-    
     try {
       localStorage.setItem("categories", JSON.stringify(categories));
     } catch (error) {
       console.error("カテゴリ保存エラー:", error);
     }
   }, [categories]);
-
-
 
   const removeCategory = (categoryToRemove) => {
     if (categoryToRemove === "未分類") return;
@@ -82,12 +83,18 @@ export default function TodoApp() {
   const handleCategoryFilterChange = (category) => {
     
     const updatedFilter = categoryFilter.includes(category)
-      ? categoryFilter.filter((cat) => cat !== category) // 選択解除
-      : [...categoryFilter, category]; // 選択
+      ? categoryFilter.filter((cat) => cat !== category) 
+      : [...categoryFilter, category]; 
       console.log("新しいカテゴリフィルター,handleCategoryFilterChange:", updatedFilter);
     dispatch({ type: "SET_CATEGORY_FILTER", payload: updatedFilter });
-    console.log("アクションがdispatchされました");
+
   };
+
+  const tasksForSelectedDate = tasks.filter(
+    (task) =>
+      task.dueDate &&
+      new Date(task.dueDate).toDateString() === selectedDate.toDateString()
+  );
 
 
   //TASKSの中身
@@ -104,6 +111,10 @@ export default function TodoApp() {
       <p>読み込み中...</p>
     ) : (
       <>
+      <div className="my-4">
+        <h2 className="text-lg font-semibold mb-2">📅 カレンダーから日付を選択</h2>
+        <CalendarTodo />
+      </div>
       <TaskInput
         task={task}
         setTask={setTask}
@@ -121,6 +132,7 @@ export default function TodoApp() {
       />
 
       <TaskListWrapper
+      tasks={tasksForSelectedDate}
           categories={categories}
           editText={editText}
           dueDate={dueDate}
