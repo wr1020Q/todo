@@ -19,7 +19,8 @@ import CalendarTodo from "./Calender";
 export default function TodoApp() {
  
   const { state, dispatch } = useContext(TaskContext);
-  const { tasks, editText ,dueDate ,isLoading,categoryFilter} = state;
+  // const { tasks, editText ,dueDate ,isLoading,categoryFilter} = state;
+  const {  editText ,dueDate ,isLoading,categoryFilter} = state;
 
   const isFirstRender = useRef(true);
   const [task, setTask] = useState("");
@@ -95,6 +96,14 @@ export default function TodoApp() {
       task.dueDate &&
       new Date(task.dueDate).toDateString() === selectedDate.toDateString()
   );
+
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/tasks')
+      .then(res => res.json())
+      .then(data => setTasks(data));
+  }, []);
 
 
   //TASKSの中身

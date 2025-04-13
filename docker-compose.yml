@@ -1,0 +1,18 @@
+# docker-compose.yml
+services:
+  client:
+    build: ./src/client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # ホットリロード用（WindowsやDocker Desktopで必要）
+
+  server:
+    build: ./src/server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
