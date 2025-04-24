@@ -17,7 +17,7 @@ import CalendarTodo from "./Calender";
 
 
 export default function TodoApp() {
- 
+  const [tasks, setTasks] = useState([]);
   const { state, dispatch } = useContext(TaskContext);
   // const { tasks, editText ,dueDate ,isLoading,categoryFilter} = state;
   const {  editText ,dueDate ,isLoading,categoryFilter} = state;
@@ -97,7 +97,7 @@ export default function TodoApp() {
       new Date(task.dueDate).toDateString() === selectedDate.toDateString()
   );
 
-  const [tasks, setTasks] = useState([]);
+
 
   useEffect(() => {
     fetch('http://localhost:3000/api/tasks')
