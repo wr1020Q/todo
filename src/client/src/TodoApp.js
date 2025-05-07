@@ -17,8 +17,9 @@ import CalendarTodo from "./Calender";
 
 
 export default function TodoApp() {
-  const [tasks, setTasks] = useState([]);
   const { state, dispatch } = useContext(TaskContext);
+  const [tasks, setTasks] = useState([]);
+ 
   // const { tasks, editText ,dueDate ,isLoading,categoryFilter} = state;
   const {  editText ,dueDate ,isLoading,categoryFilter} = state;
 
