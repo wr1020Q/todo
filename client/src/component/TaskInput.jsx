@@ -1,0 +1,82 @@
+import { TaskContext } from "../context/TaskContext";
+import { useContext } from "react"; 
+
+export default function TaskInput({ 
+  task, 
+  setTask, 
+  priority, 
+  handlePriorityChange, 
+  selectedCategory, 
+  setSelectedCategory, 
+  categories, 
+  handleAddTask ,
+  dueDate,
+  setDueDate,  
+  handleCheckboxChange,
+  categoryFilter
+}) {
+const {  dispatch } = useContext(TaskContext);
+  const handleSubmit = async(e) =>{
+    e.preventDefault();
+    await handleAddTask();
+  }
+
+  console.log('現在のcategoryFilter,INPUT:', categoryFilter); 
+  console.log('現在のcategories,INPUT:', categories);
+
+  return (
+    <div className="flex mb-4">
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="text" 
+          value={task ?? ""} 
+          onChange={(e) => setTask(e.target.value)}
+          className="border p-2 flex-grow rounded-l"
+          placeholder="タスクを入力..."
+        />
+        <select 
+          value={priority ?? ""} 
+          onChange={handlePriorityChange}  
+          className="border p-2 rounded"
+        >
+          <option key="1" value={1}>高</option>
+          <option key="2" value={2}>中</option>
+          <option key="3" value={3}>低</option>
+        </select>
+        <select 
+          value={selectedCategory ?? ""} 
+          onChange={(e) => setSelectedCategory(e.target.value)} 
+          className="border p-2 rounded"
+        >
+          <option value="">カテゴリを選択してください</option>
+        {(categories ?? []).map((cat) => (
+          <option key={cat._id} value={cat._id}>{cat.title}</option>))}
+        </select>
+          <input
+            type="date"
+            value={dueDate ?? ""}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="border p-2 rounded"
+          />
+        <button type="submit"  className="bg-blue-500 text-white p-2 rounded-r">
+          追加
+        </button>
+      </form>
+      <p>カテゴリーで絞り込み：</p>
+          {Array.isArray(categories) ?(categories.map((category) => (
+            <label key={category._id + "-checkbox"} style={{ marginRight: '10px' }}>
+            <input
+              type="checkbox"
+              checked={categoryFilter.includes(category._id)}
+              onChange={() =>dispatch({ type: "TOGGLE_CATEGORY_FILTER", payload: category._id })}
+            />
+              {category.title}
+            </label>
+          ))) : (
+            <label key="no-category-checkbox" style={{ marginRight: '10px' }}>
+              カテゴリなし
+            </label>
+          )}
+    </div>
+  );
+};
