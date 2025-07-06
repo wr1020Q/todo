@@ -1,5 +1,6 @@
 import { createContext, useReducer,useEffect, useState} from "react";
 import { getCategories, addCategoryAPI } from "../services/TaskService";
+import {showSuccess,showError} from "../utils/toast";
 export const TaskContext = createContext();
 
 const initialState = {
@@ -139,7 +140,9 @@ const taskReducer = (state, action) => {
         // setCategories(updated.data);
         setCategories(prev => [...prev, updated.data]); 
         setNewCategory("");
+        showSuccess("カテゴリーを追加しました")
       } catch (err) {
+        showError("カテゴリーを追加できませんでした")
         console.error("カテゴリ追加失敗:", err);
       }
     }

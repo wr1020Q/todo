@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 
+
 export const getTasks = async () => {
 try {
     const res = await apiClient.get('/tasks');
@@ -14,6 +15,7 @@ export const addTask = async (taskDate) => {
   try {
     console.log("addTask",taskDate);
     const res = await apiClient.post('/tasks', taskDate);
+    console.log("サーバーのaddTASK-API呼ばれた");
     return res.data;
   } catch (err) {
     console.error('タスク追加エラー:', err);

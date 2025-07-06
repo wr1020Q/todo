@@ -4,19 +4,16 @@ import { updateTaskAPI } from "../services/TaskService";
 import { useContext } from "react";
 import { TaskContext } from "../context/TaskContext";
 import { deleteTaskAPI } from "../services/TaskService"; 
+import {showSuccess,showError} from "../utils/toast";
+import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateCompletedSchema } from '../utils/schema';
 
 export default function TaskList({
   tasks = [],
   categories = [],
-  // startEditing,
   editText,
   setEditText,
-  // saveEdit,
-  // toggleTask,
   toggleComplete,
-  // updatePriority,
   removeCategory,
-  // updateDueDate,
   categoryFilter
 }) {
 
@@ -26,22 +23,43 @@ export default function TaskList({
   const {  dispatch } = useContext(TaskContext);
   const [editingTaskId, setEditingTaskId] = useState(null);
 
-
-
   const toggleTask=async(id,newcompleted)=>{
-    console.log("newcompleted",newcompleted)
-     dispatch({ type: "TOGGLE_TASK", payload: { id } })
-     await updateTaskAPI(id, { completed: newcompleted });
+    try {
+          await updateCompletedSchema.validate({ completed: newcompleted });
+          console.log("newcompleted",newcompleted)
+          await updateTaskAPI(id, { completed: newcompleted });
+          dispatch({ type: "TOGGLE_TASK", payload: { id } })
+    } catch (err) {
+      if (err.name !== 'ValidationError') {
+          showError("タスクの優先度ができませんでした")
+    }
   }
+}
 
   const  updatePriority =async (id, newPriority) =>{
-    dispatch({ type: "UPDATE_PRIORITY", payload: { id, newPriority } })
-    await updateTaskAPI(id, { priority: newPriority });
+    try { 
+          await updatePrioritySchema.validate({ priority: newPriority });
+          await updateTaskAPI(id, { priority: newPriority });
+          dispatch({ type: "UPDATE_PRIORITY", payload: { id, newPriority } })
+          showSuccess("タスクの優先度を更新しました")
+    } catch (err) {
+      if (!err.name !== 'ValidationError') {
+          showError("タスクの優先度ができませんでした")
+      }
+    }
   }
   
   const  updateDueDate=async(id, dueDate) =>{
-    dispatch({ type: "UPDATE_DUE_DATE", payload: { id, dueDate } })
-    await updateTaskAPI(id, { dueDate: dueDate });
+    try { 
+          await updateDueDateSchema.validate({ dueDate: dueDate });
+          await updateTaskAPI(id, { dueDate: dueDate });
+          dispatch({ type: "UPDATE_DUE_DATE", payload: { id, dueDate } })
+          showSuccess("タスクの期限を更新しました")
+    } catch (err) {
+      if (!err.name !== 'ValidationError') {
+          showError("タスクの期限が更新できませんでした")
+      }
+    }
   }
                  
   const startEditing = (taskId, currentText) => {
@@ -51,20 +69,30 @@ export default function TaskList({
 
   const handleUpdateTask = async (taskId, updatedFields) => {
     console.log("List Task更新",taskId,updatedFields)
-  try {
-     await updateTaskAPI(taskId, {text:updatedFields} );
-      dispatch({type: "SAVE_EDIT", payload: { id: taskId, text: updatedFields } });
-      setEditingTaskId(null);
-      setEditText("");
-  } catch (err) {
-    console.error("タスクの更新に失敗しました:", err);
-  }
-};
+    try {
+          await updateTaskSchema.validate({ text: updatedFields });
+          await updateTaskAPI(taskId, {text:updatedFields} );
+          dispatch({type: "SAVE_EDIT", payload: { id: taskId, text: updatedFields } });
+          setEditingTaskId(null);
+          setEditText("");
+          showSuccess("タスクを更新しました")
+    } catch (err) {
+      if (err.name !== 'ValidationError') {
+          showError("タスクの更新ができませんでした")
+          console.error("タスクの更新に失敗しました:", err);
+      }
+    }
+  };
 
   const deleteTask = async (id) => {
-    await deleteTaskAPI(id);
-    console.log("DELETE_TASK", id);
-    dispatch({ type: "DELETE_TASK", payload: { id } });
+    try {
+          await deleteTaskAPI(id);
+          console.log("DELETE_TASK", id);
+          dispatch({ type: "DELETE_TASK", payload: { id } });
+    } catch (err) {
+      showError("タスクの削除ができませんでした")
+      console.error("タスクの削除に失敗しました:", err);
+    }
   };
 
 const filteredTasks = useMemo(() => {
