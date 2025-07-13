@@ -1,12 +1,11 @@
 import { createContext, useReducer,useEffect, useState} from "react";
-import { getCategories, addCategoryAPI } from "../services/TaskService";
+import { getCategories, addCategoryAPI ,deleteCategory,getTasks} from "../services/TaskService";
 import {showSuccess,showError} from "../utils/toast";
 export const TaskContext = createContext();
 
 const initialState = {
   tasks: [],
   editText: "",
-  // dueDate: "",
   isLoading: true,
   categoryFilter: [],
   sortBy: "deadlineAsc", 
@@ -112,32 +111,16 @@ const taskReducer = (state, action) => {
 
   const [state, dispatch] = useReducer(taskReducer, initialState);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
 
-  // 初期取得
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const category = await getCategories();
-        setCategories(category.data);
-        setSelectedCategory(category[0]?.id || "");
-      } catch (err) {
-        console.error("カテゴリ取得失敗:", err);
-      }
-    };
-    fetchCategories();
-  }, []);
-
   const addCategory = async () => {
-    if (newCategory && !categories.some(c => c.title === newCategory)) {
+    if (newCategory && categories.some(c => c.title === newCategory)) {
+        showError("このカテゴリーは既に存在します");
+        return;
+    }
       try {
         console.log("新しいカテゴリー",newCategory)
         const updated = await addCategoryAPI(newCategory);
-        // const updated = await getCategories();
-        // console.log("新しいカテゴリー追加再取得",newCategory)
-        console.log("新しいカテゴリー追加再取得",updated)
-        // setCategories(updated.data);
         setCategories(prev => [...prev, updated.data]); 
         setNewCategory("");
         showSuccess("カテゴリーを追加しました")
@@ -145,8 +128,25 @@ const taskReducer = (state, action) => {
         showError("カテゴリーを追加できませんでした")
         console.error("カテゴリ追加失敗:", err);
       }
-    }
+    
   };
+  
+    const removeCategory = async(id, title) => {
+      if (title === "未分類") return;
+    
+    try {
+      await deleteCategory(id); 
+      const res = await getTasks(); 
+      const catRes = await getCategories();
+  
+      setCategories(catRes.data);
+      dispatch({ type: "INIT_TASKS", payload: res.data });
+      showSuccess("カテゴリーを削除しました")
+    } catch (err) {
+      showError("カテゴリーを削除できませんでした")
+      console.error("カテゴリ削除エラー", err);
+    }
+    };
        
 return (
        <TaskContext.Provider
@@ -155,11 +155,10 @@ return (
         dispatch,
         categories,
         setCategories,
-        selectedCategory,
-        setSelectedCategory,
         newCategory,
         setNewCategory,
-        addCategory
+        addCategory,
+        removeCategory
       }}
     >
       {children}

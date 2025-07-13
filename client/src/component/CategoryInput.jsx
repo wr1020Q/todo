@@ -2,8 +2,15 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { addCategorySchema } from '../utils/schema';
+import { TaskContext } from "../context/TaskContext";
+import { useContext } from "react"; 
 
-export default function CategoryInput({ newCategory, setNewCategory, addCategory }) {
+export default function CategoryInput() {
+      const {
+        newCategory,
+        setNewCategory,
+        addCategory
+    } =   useContext(TaskContext);
     const {
       register,
       handleSubmit,

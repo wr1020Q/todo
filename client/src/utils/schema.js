@@ -1,4 +1,4 @@
-import { yupResolver } from '@hookform/resolvers/yup';
+
 import * as Yup from 'yup';
 
 //タスク追加
@@ -37,5 +37,18 @@ export const updateDueDateSchema = Yup.object().shape({
     .typeError('期限を選んでください')
     .required('期限を選んでください'),
 });
+
+//ログイン
+export const loginSchema = Yup.object({
+  user: Yup.string().required('ユーザー名は必須です'),
+  password: Yup.string().min(6, '6文字以上で入力してください').required('パスワードは必須です'),
+}).required();
+
+//新規登録
+export const registerSchema = Yup.object({
+  user: Yup.string().required('ユーザー名は必須です'),
+  email: Yup.string().email('正しいメールアドレスを入力してください').required('メールアドレスは必須です'),
+  password: Yup.string().min(6, '6文字以上で入力してください').required('パスワードは必須です'),
+}).required();
 
 

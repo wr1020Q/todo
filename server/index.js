@@ -8,11 +8,14 @@ const ExpressError = require('./utils/expressError');
 const {Task} = require('./models/taskschema'); 
 const {Category} = require('./models/categoryschema'); 
 const categoryRoutes = require('./routes/categories');
+const authRoutes = require("./routes/auth.js");
+const { verifyToken } = require("./middleware/verifyToken.js");
 const { title } = require('process');
 
 const app = express();
 const PORT = 3000;
 
+// dotenv.config();
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -65,10 +68,15 @@ const validateTask = (req, res, next) => {
 }
 
 app.use('/api/categories', categoryRoutes);
+// app.use("/api/auth", authRoutes);
 
 app.get('/',(req,res)=>{
     res.send('hello world')
 });
+// 保護されたルート例（後でverifyTokenで保護する）
+// app.get("/api/protected", verifyToken,(req, res) => {
+//   res.send(`こんにちは ${req.user.email} さん`);
+// });
 
 app.get('/api/tasks', async (req, res) => {
   try {

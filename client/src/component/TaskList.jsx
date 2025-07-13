@@ -10,18 +10,23 @@ import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateComplet
 export default function TaskList({
   tasks = [],
   categories = [],
-  editText,
-  setEditText,
-  toggleComplete,
-  removeCategory,
-  categoryFilter
+  // editText,
+  setEditText
 }) {
+  
+  const {removeCategory} =   useContext(TaskContext);
+  const { state, dispatch } = useContext(TaskContext);
+  const { categoryFilter,editText} = state;
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   console.log("受け取ったLIST内 tasks:", tasks);
   console.log("受け取ったLIST内 categories:", categories);
   console.log("受け取ったLIST内 categoryFilter:", categoryFilter);
-  const {  dispatch } = useContext(TaskContext);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+
+  const startEditing = (taskId, currentText) => {
+    setEditingTaskId(taskId);
+    setEditText(currentText);
+  };
 
   const toggleTask=async(id,newcompleted)=>{
     try {
@@ -62,11 +67,6 @@ export default function TaskList({
     }
   }
                  
-  const startEditing = (taskId, currentText) => {
-    setEditingTaskId(taskId);
-    setEditText(currentText);
-  };
-
   const handleUpdateTask = async (taskId, updatedFields) => {
     console.log("List Task更新",taskId,updatedFields)
     try {
@@ -142,7 +142,6 @@ const filteredTasks = useMemo(() => {
                   <input
                     type="checkbox"
                     checked={task.completed}
-                    // onChange={() => toggleComplete(task._id)}
                     onChange={() => toggleTask(task._id, !task.completed)} 
                     className="mr-2"
                   />
@@ -157,7 +156,6 @@ const filteredTasks = useMemo(() => {
                       className="flex-grow" /></>
                   ) : (
                     <>
-                    
                       <span
                         className={`flex-grow cursor-pointer ${
                           task.completed ? "line-through text-gray-400" : ""
@@ -177,7 +175,6 @@ const filteredTasks = useMemo(() => {
                         <option value={3}>低</option>
                       </select>
                       <input
-                      
                         type="date"
                         value={task.dueDate ? task.dueDate.split('T')[0] : ''}
                         onChange={(e) => updateDueDate(task._id, e.target.value)} />

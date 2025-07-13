@@ -1,11 +1,10 @@
 import { TaskContext } from "../context/TaskContext"; 
 import TaskList from "./TaskList";
 import { useMemo, useState ,useContext } from "react";
-import { deleteTaskAPI } from "../services/TaskService";
 
-export default function TaskListWrapper({ categories,editText,dueDate,removeCategory,categoryFilter}) {
+export default function TaskListWrapper({categories}) {
   const { state, dispatch } = useContext(TaskContext);
-  const { tasks,  sortBy } = state;
+  const { tasks, categoryFilter, sortBy } = state;
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTasks = useMemo(() => {
@@ -71,15 +70,9 @@ export default function TaskListWrapper({ categories,editText,dueDate,removeCate
 
       <TaskList
         tasks={sortedTasks}
-        categories={categories}
-        editText={editText}
+        categories = {categories}
         setEditText={(text) => dispatch({ type: "START_EDITING", payload: { id: null, text } })}
-        startEditing={(id) => dispatch({ type: "START_EDITING", payload: { id} })}
-        toggleComplete={(id) => dispatch({ type: "TOGGLE_CATEGORY_FILTER", payload: { id } })}
-        removeCategory={removeCategory}
-        dueDate={dueDate}
-        categoryFilter={state.categoryFilter}
       />
     </>
-  );
+  );  
 }

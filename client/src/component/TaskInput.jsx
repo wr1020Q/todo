@@ -1,29 +1,19 @@
 import { TaskContext } from "../context/TaskContext";
-import { useContext } from "react"; 
+import { useContext,useState } from "react"; 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { addTaskSchema } from '../utils/schema';
+import { addTask} from '../services/TaskService';
+import {showSuccess,showError} from "../utils/toast";
 
 export default function TaskInput({ 
-  task, 
-  setTask, 
-  priority, 
-  handlePriorityChange, 
-  selectedCategory, 
-  setSelectedCategory, 
-  categories, 
-  handleAddTask ,
-  dueDate,
-  setDueDate,  
-  handleCheckboxChange,
-  categoryFilter
+  categories,  
 }) {
-  const {  dispatch } = useContext(TaskContext);
-  // const handleSubmit = async(e) =>{
-  //   e.preventDefault();
-  //   await handleAddTask();
-  // }
-
+  const { state, dispatch } = useContext(TaskContext);
+  const { dueDate ,categoryFilter} = state;
+  const [task, setTask] = useState("");
+  const [priority, setPriority] = useState(2);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const {
     register,
     handleSubmit,
@@ -38,6 +28,30 @@ export default function TaskInput({
   };
 
   const onError = (errors) => console.log(errors);
+
+    const handleAddTask = async () => {
+      try{
+        console.log("handleAddTask",selectedCategory)
+        const newTask = {
+          text: task,
+          priority,
+          category: selectedCategory ,
+          dueDate
+        };
+  
+        const createdTask= await addTask(newTask);
+        console.log("handleAddTask返されたタスク",createdTask.data)
+        dispatch({ type: "ADD_TASK",payload:  createdTask.data });
+        setTask("");
+        setPriority(2);
+        setSelectedCategory("");
+        dispatch({ type: "SET_DUE_DATE", payload: "" });
+        showSuccess("タスクを新しく追加しました")
+      }catch(e){
+        showError("タスクを追加できませんでした")
+      }
+    };
+
   console.log('現在のcategoryFilter,INPUT:', categoryFilter); 
   console.log('現在のcategories,INPUT:', categories);
 
@@ -56,7 +70,7 @@ export default function TaskInput({
         <select
         {...register('priority')}  
           value={priority ?? ""} 
-          onChange={handlePriorityChange}  
+          onChange={(e)=>setPriority(Number(e.target.value))}  
           className="border p-2 rounded"
         >
           <option key="1" value={1}>高</option>
@@ -79,7 +93,7 @@ export default function TaskInput({
           {...register('dueDate')}
             type="date"
             value={dueDate ?? ""}
-            onChange={(e) => setDueDate(e.target.value)}
+            onChange={(e) => dispatch({ type: "SET_DUE_DATE", payload: e.target.value })}
             className="border p-2 rounded"
           />
           {errors.dueDate && <p style={{ color: 'red' }}>{errors.dueDate.message}</p>}
