@@ -1,56 +1,96 @@
-import React from "react";
 
-export default function TaskItem({ task, onToggleComplete, onDelete, onStartEditing, onSaveEdit, onToggleTask, isEditing, editText, setEditText, onPriorityChange }) {
-  const priorityClass = {
-    "高": "bg-red-200",
-    "中": "bg-yellow-200",
-    "低": "bg-green-200"
-  }[task.priority] || "";
+
+import {React ,useEffect,useState}from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+
+export default function TaskItem({
+  task,
+  editingTaskId,
+  startEditing,
+  toggleTask,
+  updatePriority,
+  updateDueDate,
+  handleUpdateTask,
+  deleteTask,
+  errorMessage,
+}) {
+  const isEditing = editingTaskId === task._id;
+  const [localEditText, setLocalEditText] = useState("");
+  
+  useEffect(() => {
+    if (isEditing) {
+      setLocalEditText(task.text); // 編集開始時だけセット
+    }
+  }, [isEditing, task.text]);
 
   return (
     <li
-      onDoubleClick={() => onStartEditing(task.id, task.text)}
-      className={`flex justify-between items-center p-2 border-b ${priorityClass}`}
+      key={task._id}
+      className={`flex justify-between items-center p-2 border-b
+        ${task.priority === 1 ? "bg-red-200" : ""}
+        ${task.priority === 2 ? "bg-yellow-200" : ""}
+        ${task.priority === 3 ? "bg-green-200" : ""}
+      `}
+      onDoubleClick={() => startEditing(task._id, task.text)}
     >
       <input
         type="checkbox"
         checked={task.completed}
-        onChange={() => onToggleComplete(task.id)}
+        onChange={() => toggleTask(task._id, !task.completed)}
+        className="mr-2"
       />
       {isEditing ? (
+      <>
         <input
           type="text"
-          value={editText}
-          onChange={(e) => setEditText(e.target.value)}
-          onBlur={() => onSaveEdit(task.id)}
-          onKeyDown={(e) => e.key === "Enter" && onSaveEdit(task.id)}
+          value={localEditText}
+          onChange={(e) => setLocalEditText(e.target.value)}
+          onBlur={() => handleUpdateTask(task._id, localEditText)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault(); 
+              handleUpdateTask(task._id, localEditText);
+            }     
+          }}
           autoFocus
+          className="flex-grow"
         />
+        {errorMessage && <p className="text-red-500 text-xs italic ml-2">{errorMessage}</p>}
+      </>
       ) : (
         <>
           <span
-            className={`task-container ${task.completed ? "completed" : ""}`}
-            onClick={() => onToggleTask(task.id)}
+            className={`flex-grow cursor-pointer ${task.completed ? "line-through text-gray-400" : ""}`}
+            onClick={() => toggleTask(task._id, task.completed)}
+            onDoubleClick={() => startEditing(task._id, task.text)}
           >
-            {task.text}-
+            {task.text}
           </span>
           <select
             value={task.priority}
-            onChange={(e) => onPriorityChange(task.id, e.target.value)}
-            className="border p-2 rounded"
+            onChange={(e) => updatePriority(task._id, e.target.value)}
+            className="border p-1 rounded text-sm mr-2"
           >
-            <option value="高">高</option>
-            <option value="中">中</option>
-            <option value="低">低</option>
+            <option value={1}>高</option>
+            <option value={2}>中</option>
+            <option value={3}>低</option>
           </select>
+          <input
+            type="date"
+            value={task.dueDate ? task.dueDate.split("T")[0] : ""}
+            onChange={(e) => updateDueDate(task._id, e.target.value)}
+            className="mr-2"
+          />
+          <button
+            type="button"
+            onClick={() => deleteTask(task._id)}
+            className="text-red-500 text-sm"
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </>
       )}
-      <button
-        onClick={() => onDelete(task.id)}
-        className="text-red-500"
-      >
-        タスクの削除
-      </button>
     </li>
   );
 }

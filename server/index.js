@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path')
 const { success, error ,wrapperAsync} = require('./utils/responseWrapper');
-const { tasksSchema ,categoriesSchema} = require('../schemas');
+const { tasksSchema ,partialTaskSchema} = require('../schemas');
 const ExpressError = require('./utils/expressError');
 const {Task} = require('./models/taskschema'); 
 const {Category} = require('./models/categoryschema'); 
@@ -57,8 +57,20 @@ const errorHandler = (err, req, res, next) => {
   return error(res, message, status);
 };
 
+//タスク追加バリデーション
 const validateTask = (req, res, next) => {
     const { error } = tasksSchema.validate(req.body);
+    if (error) {
+        const msg = error.details.map(detail => detail.message).join(',');
+        throw new ExpressError(msg, 400);
+    } else {
+        next();
+    }
+}
+
+//タスク更新バリデーション
+const validateUpdateTask = (req, res, next) => {
+    const { error } = partialTaskSchema.validate(req.body);
     if (error) {
         const msg = error.details.map(detail => detail.message).join(',');
         throw new ExpressError(msg, 400);
@@ -78,10 +90,11 @@ app.get('/',(req,res)=>{
 //   res.send(`こんにちは ${req.user.email} さん`);
 // });
 
+//初期データ取得
 app.get('/api/tasks', async (req, res) => {
   try {
     const tasks = await Task.find().populate('category');
-    console.log("GET:", tasks);
+    // console.log("GET:", tasks);
     success(res, tasks, 'タスク一覧を取得しました');
   } catch (error) {
     console.error('サーバーエラー:', error);
@@ -89,6 +102,7 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
+//追加
   app.post('/api/tasks', validateTask,async (req, res) => {
   try {
     const { text, priority, category, dueDate } = req.body;
@@ -111,7 +125,8 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
-app.patch('/api/tasks/:id',async (req, res) => {
+//更新
+app.patch('/api/tasks/:id',validateUpdateTask,async (req, res) => {
   try {
 
     const updated = await Task.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
@@ -119,13 +134,14 @@ app.patch('/api/tasks/:id',async (req, res) => {
       return error(res, '更新対象のタスクが見つかりません。', 500);
     }
     
-    console.log(updated,'タスクを更新しました')
+    // console.log(updated,'タスクを更新しました')
     success(res,updated,'タスクを更新しました')
   } catch (err) {
     return error(res, 'タスク更新失敗', 500);
   }
 });
 
+//削除
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
     await Task.findByIdAndDelete(req.params.id);

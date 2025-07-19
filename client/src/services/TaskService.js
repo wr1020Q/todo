@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 
-
-export const getTasks = async () => {
+//タスク一覧取得
+export const getTasksAPI = async () => {
 try {
     const res = await apiClient.get('/tasks');
     return res.data;
@@ -11,11 +11,11 @@ try {
   }
 };
 
-export const addTask = async (taskDate) => {
+//タスク追加
+export const addTaskAPI = async (taskDate) => {
   try {
     console.log("addTask",taskDate);
     const res = await apiClient.post('/tasks', taskDate);
-    console.log("サーバーのaddTASK-API呼ばれた");
     return res.data;
   } catch (err) {
     console.error('タスク追加エラー:', err);
@@ -23,6 +23,7 @@ export const addTask = async (taskDate) => {
   }
 };
 
+//タスク更新
 export const updateTaskAPI = async (id, updatedData) => {
   try {
     console.log("updateTaskAPI",updatedData);
@@ -33,6 +34,7 @@ export const updateTaskAPI = async (id, updatedData) => {
   }
 };
 
+//タスク削除
 export const deleteTaskAPI = async (id) => {
   try {
     await apiClient.delete(`/tasks/${id}`);
@@ -44,7 +46,8 @@ export const deleteTaskAPI = async (id) => {
 };
 
 //カテゴリー
-export const getCategories = async () => {
+//カテゴリー一覧取得
+export const getCategoriesAPI = async () => {
 try {
     const res = await apiClient.get('/categories');
     return res.data;
@@ -54,6 +57,7 @@ try {
   }
 };
 
+//カテゴリー追加
 export const addCategoryAPI = async (title) => {
 try {
   console.log("addCategoryAPI",title)
@@ -65,16 +69,19 @@ try {
   }
 };
 
-export const updateCategory = async (id, updatedData) => {
+//カテゴリー更新
+export const updateCategoryAPI = async (id, updatedData) => {
 try {
-    await apiClient.put(`/categories/${id}`, updatedData);
+    const res = await apiClient.put(`/categories/${id}`, {title : updatedData});
+    return res.data;
   } catch (err) {
     console.error('カテゴリー更新エラー:', err);
     throw err;
   }
 };
 
-export const deleteCategory = async (id) => {
+//カテゴリー削除
+export const deleteCategoryAPI = async (id) => {
   try {
     await apiClient.delete(`/categories/${id}`);
   } catch (err) {

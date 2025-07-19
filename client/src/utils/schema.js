@@ -20,17 +20,22 @@ export const addCategorySchema = Yup.object({
 
 //タスク更新
 export const updateTaskSchema = Yup.object().shape({
-  text: Yup.string().required('タスクのタイトルは必須です')
+  text: Yup.string()
+    .trim() // 空白だけの入力を弾く
+    .min(1, "1文字以上で入力してください")
+    .required("タスクのタイトルは必須です"),
 });
-
+//完了状態更新
 export const updateCompletedSchema = Yup.object().shape({
   completed: Yup.boolean().default(false),
 })
 
+//優先度更新
 export const updatePrioritySchema = Yup.object().shape({
   priority: Yup.number().oneOf([1, 2, 3], '優先度は高, 中, 低のいずれかでなければなりません').required('優先度は必須です'),
 });
 
+//期限更新
 export const updateDueDateSchema = Yup.object().shape({
     dueDate: Yup.date()
     .transform((value, originalValue) => (originalValue === "" ? null : value))

@@ -3,21 +3,22 @@ import { useMemo ,useState} from "react";
 import { updateTaskAPI } from "../services/TaskService";
 import { useContext } from "react";
 import { TaskContext } from "../context/TaskContext";
-import { deleteTaskAPI } from "../services/TaskService"; 
+import { deleteTaskAPI ,updateCategoryAPI} from "../services/TaskService"; 
 import {showSuccess,showError} from "../utils/toast";
-import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateCompletedSchema } from '../utils/schema';
+import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateCompletedSchema,addCategorySchema } from '../utils/schema';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import TaskItem from "./TaskItem";
 
-export default function TaskList({
-  tasks = [],
-  categories = [],
-  // editText,
-  setEditText
-}) {
+export default function TaskList({ tasks = [],categories = [],setEditText }) {
   
-  const {removeCategory} =   useContext(TaskContext);
-  const { state, dispatch } = useContext(TaskContext);
+  const { state, dispatch ,setCategories,removeCategory} = useContext(TaskContext);
   const { categoryFilter,editText} = state;
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [categoryEdit, setCategoryEdit] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessageCat, setErrorMessageCat] = useState("");
 
   console.log("受け取ったLIST内 tasks:", tasks);
   console.log("受け取ったLIST内 categories:", categories);
@@ -26,6 +27,13 @@ export default function TaskList({
   const startEditing = (taskId, currentText) => {
     setEditingTaskId(taskId);
     setEditText(currentText);
+     setErrorMessage("");
+  };
+
+  const startEditingCat = (catId, currentText) => {
+    setEditingCategoryId(catId);
+    setCategoryEdit(currentText);
+    setErrorMessageCat("");
   };
 
   const toggleTask=async(id,newcompleted)=>{
@@ -35,11 +43,14 @@ export default function TaskList({
           await updateTaskAPI(id, { completed: newcompleted });
           dispatch({ type: "TOGGLE_TASK", payload: { id } })
     } catch (err) {
-      if (err.name !== 'ValidationError') {
-          showError("タスクの優先度ができませんでした")
+        if (err.name === "ValidationError") {
+          showError(err.message);  
+          return; 
+        }
+        showError("タスクの状態を更新することができませんでした");
+        console.error(err);
     }
-  }
-}
+  };
 
   const  updatePriority =async (id, newPriority) =>{
     try { 
@@ -48,11 +59,14 @@ export default function TaskList({
           dispatch({ type: "UPDATE_PRIORITY", payload: { id, newPriority } })
           showSuccess("タスクの優先度を更新しました")
     } catch (err) {
-      if (!err.name !== 'ValidationError') {
-          showError("タスクの優先度ができませんでした")
-      }
+        if (err.name === "ValidationError") {
+          showError(err.message);  
+          return; 
+        }
+        showError("タスクの優先度を更新することができませんでした");
+        console.error(err);
     }
-  }
+  };
   
   const  updateDueDate=async(id, dueDate) =>{
     try { 
@@ -61,15 +75,19 @@ export default function TaskList({
           dispatch({ type: "UPDATE_DUE_DATE", payload: { id, dueDate } })
           showSuccess("タスクの期限を更新しました")
     } catch (err) {
-      if (!err.name !== 'ValidationError') {
-          showError("タスクの期限が更新できませんでした")
-      }
+        if (err.name === "ValidationError") {
+          showError(err.message); 
+          return; 
+        }
+        showError("タスクの期限を更新することができませんでした");
+        console.error(err);
     }
-  }
-                 
+  };
+    
+  //タスク更新
   const handleUpdateTask = async (taskId, updatedFields) => {
-    console.log("List Task更新",taskId,updatedFields)
     try {
+          console.log("List Task更新",taskId,updatedFields)
           await updateTaskSchema.validate({ text: updatedFields });
           await updateTaskAPI(taskId, {text:updatedFields} );
           dispatch({type: "SAVE_EDIT", payload: { id: taskId, text: updatedFields } });
@@ -77,12 +95,32 @@ export default function TaskList({
           setEditText("");
           showSuccess("タスクを更新しました")
     } catch (err) {
-      if (err.name !== 'ValidationError') {
-          showError("タスクの更新ができませんでした")
-          console.error("タスクの更新に失敗しました:", err);
-      }
+        if (err.name === "ValidationError") {
+          setErrorMessage(err.message); 
+          return; // ここで処理を止めるの
+        }
+        showError("タスクの更新ができませんでした");
+        console.error(err);
     }
   };
+  //カテゴリー更新
+    const handleUpdateCategory = async (catId, updatedFields) => {
+      try{
+          await addCategorySchema.validate({ title: updatedFields });
+          const updated = await updateCategoryAPI(catId, updatedFields)
+          setCategories(preCategories => preCategories.map(cat => cat._id === updated.data._id ? {...cat,...updated.data}:cat))
+          setEditingCategoryId(null);
+          setCategoryEdit("")
+          showSuccess("カテゴリーを更新しました")
+      }catch (err) {
+        if (err.name === "ValidationError") {
+          setErrorMessageCat(err.message); 
+          return; 
+        }
+        showError("カテゴリーの更新ができませんでした");
+        console.error(err);
+      }
+    }
 
   const deleteTask = async (id) => {
     try {
@@ -107,93 +145,83 @@ const filteredTasks = useMemo(() => {
     : [];
 }, [tasks, categoryFilter]);
 
-  
-  return (
-    <div>
-      {categories.map((cat) => {
-        const tasksInCategory = filteredTasks.filter((task) => {
-        const id = task.category?._id ;
-        return String(id) === String(cat._id);});
-        if (tasksInCategory.length === 0) return null;
 
-        return (
-          <div key={cat._id + "input"} className="mb-4">
-            <div className="flex justify-between items-center">
-              <h2 className="font-bold text-lg mt-4">{cat.title}</h2>
-              {cat.title !== "未分類" && (
-                <button
-                  onClick={() => removeCategory(cat._id, cat.title)}
-                  className="text-red-500 text-sm"
-                >削除</button>
-              )}
-            </div>
+return (
+  <div>
+    {categories.map((cat) => {
+      const tasksInCategory = filteredTasks.filter((task) => {
+        const id = task.category?._id;
+        return String(id) === String(cat._id);
+      });
 
-            <ul>
-              {tasksInCategory.map((task) => (
-                <li
-                  key={task._id + "input"}
-                  className={`flex justify-between items-center p-2 border-b
-                    ${task.priority === 1 ? "bg-red-200" : ""}
-                    ${task.priority === 2 ? "bg-yellow-200" : ""}
-                    ${task.priority === 3 ? "bg-green-200" : ""}
-                  `}
-                  onDoubleClick={() => startEditing(task._id, task.text)}
+      if (tasksInCategory.length === 0) return null;
+
+      return (
+        <div key={cat._id + "input"} className="mb-4">
+          <div className="flex items-center justify-between px-2 mt-4">
+            {editingCategoryId === cat._id  ? (
+              <>
+                <input
+                  type="text"
+                  value={categoryEdit}
+                  onChange={(e) => setCategoryEdit(e.target.value)}
+                  onBlur={() => handleUpdateCategory(cat._id, categoryEdit)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault(); 
+                      handleUpdateCategory(cat._id, categoryEdit);
+                    }     
+                  }}
+                  autoFocus
+                  className="flex-grow"
+                />
+                {errorMessageCat && (
+                  <p className="text-red-500 text-xs italic ml-2">{errorMessageCat}</p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 
+                    onDoubleClick={() => {
+                      if (cat.title !== "未分類") {
+                        startEditingCat(cat._id, cat.title);
+                      }
+                    }}
+                  className="font-bold text-lg"
                 >
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => toggleTask(task._id, !task.completed)} 
-                    className="mr-2"
-                  />
-                  {editingTaskId === task._id ?(
-                    <><input
-                      type="text"
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      onBlur={() => handleUpdateTask(task._id,editText)}
-                      onKeyDown={(e) => e.key === "Enter" && handleUpdateTask(task._id,editText)}
-                      autoFocus
-                      className="flex-grow" /></>
-                  ) : (
-                    <>
-                      <span
-                        className={`flex-grow cursor-pointer ${
-                          task.completed ? "line-through text-gray-400" : ""
-                        }`}
-                        onClick={() => toggleTask(task._id,task.completed)}
-                        onDoubleClick={() => startEditing(task._id, task.text)}
-                        >
-                        {task.text}
-                      </span>
-                      <select
-                        value={task.priority}
-                        onChange={(e) =>updatePriority(task._id, e.target.value)}
-                        className="border p-1 rounded text-sm mr-2"
-                      >
-                        <option value={1}>高</option>
-                        <option value={2}>中</option>
-                        <option value={3}>低</option>
-                      </select>
-                      <input
-                        type="date"
-                        value={task.dueDate ? task.dueDate.split('T')[0] : ''}
-                        onChange={(e) => updateDueDate(task._id, e.target.value)} />
-                      <button
-                      type="button"
-                        onClick={() => deleteTask(task._id)}
-                        className="text-red-500 text-sm"
-                      >
-                        削除
-                      </button>
-                  
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
+                  {cat.title}
+                </h2>
+                {cat.title !== "未分類" && (
+                  <button
+                    onClick={() => removeCategory(cat._id, cat.title)}
+                    className="text-red-500 text-sm"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                )}
+              </>
+            )}
           </div>
-        );
-      })}
-    </div>
-  );
-}
+
+          <ul>
+            {tasksInCategory.map((task) => (
+              <TaskItem
+                key={task._id}
+                task={task}
+                editingTaskId={editingTaskId}
+                editText={editText}
+                startEditing={startEditing}
+                toggleTask={toggleTask}
+                updatePriority={updatePriority}
+                updateDueDate={updateDueDate}
+                handleUpdateTask={handleUpdateTask}
+                deleteTask={deleteTask}
+                errorMessage={errorMessage}
+              />
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+);}

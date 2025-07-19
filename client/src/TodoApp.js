@@ -1,5 +1,5 @@
 
-import { useState, useEffect} from "react";
+import { useState, useEffect,useRef } from "react";
 import TaskInput from "./component/TaskInput";
 import Navbar from "./component/Navbar";
 import { TaskContext } from "./context/TaskContext";
@@ -9,18 +9,31 @@ import TaskListWrapper from "./component/TaskListWrapper";
 import 'react-calendar/dist/Calendar.css';
 import { useTasks } from "./hooks/useGetTasks";
 import { useGetCategories } from "./hooks/useGetCategories"; 
+import {showError} from "./utils/toast";
 
 export default function TodoApp() {
+  const didFetchRef = useRef(false);
   const { state, dispatch } = useContext(TaskContext);
-  const { editText ,isLoading} = state;
+  const { isLoading} = state;
   const [selectedDate] = useState(new Date());
   const { fetchTasks } = useTasks();
   const { fetchCategories } = useGetCategories();
 
-  useEffect(() => {
-    fetchTasks();
-    fetchCategories()
-  }, []);
+useEffect(() => {
+  
+
+  if (didFetchRef.current) return;
+  didFetchRef.current = true;
+
+  const fetchInitialData = async () => {
+    try {
+      await Promise.all([fetchTasks(), fetchCategories()]);
+    } catch {
+      showError("初期データの取得に失敗しました。サーバーをご確認ください。");
+    }
+  };
+  fetchInitialData();
+}, []);
 
   const {categories} =   useContext(TaskContext);
   
@@ -46,7 +59,6 @@ const tasksForSelectedDate = Array.isArray(state.tasks)
       <>
       <TaskInput
         categories={categories}
-        setDueDate={(date) => dispatch({ type: "SET_DUE_DATE", payload: date })}
       />
 
       <TaskListWrapper

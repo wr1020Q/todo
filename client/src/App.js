@@ -8,7 +8,7 @@ import { ErrorProvider, ErrorContext } from './context/ErrorContext';
 import { registerErrorNotifier } from './utils/errorNotifier';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import  CalendarTodo  from "./page/Calender";
+import  CalendarTodo  from "./page/Calendar";
 import  LoginForm  from "./page/LoginForm.jsx";
 import  Register  from "./page/register.jsx";
 import TodoApp from "./TodoApp";

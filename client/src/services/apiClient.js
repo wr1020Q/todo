@@ -22,7 +22,7 @@ apiClient.interceptors.request.use(function (config) {
     return response;
   }, function (error) {
       const msg = error.response?.data?.message || '通信エラーが発生しました';
-      showError(msg)
+      // showError(msg)
       // notifyErrorMessage(msg);
     return Promise.reject(error);
   });

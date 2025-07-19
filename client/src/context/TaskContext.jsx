@@ -1,11 +1,11 @@
 import { createContext, useReducer,useEffect, useState} from "react";
-import { getCategories, addCategoryAPI ,deleteCategory,getTasks} from "../services/TaskService";
+import { getCategoriesAPI, addCategoryAPI ,deleteCategoryAPI,getTasksAPI} from "../services/TaskService";
 import {showSuccess,showError} from "../utils/toast";
 export const TaskContext = createContext();
 
 const initialState = {
   tasks: [],
-  editText: "",
+  // editText: "",
   isLoading: true,
   categoryFilter: [],
   sortBy: "deadlineAsc", 
@@ -135,9 +135,9 @@ const taskReducer = (state, action) => {
       if (title === "未分類") return;
     
     try {
-      await deleteCategory(id); 
-      const res = await getTasks(); 
-      const catRes = await getCategories();
+      await deleteCategoryAPI(id); 
+      const res = await getTasksAPI(); 
+      const catRes = await getCategoriesAPI();
   
       setCategories(catRes.data);
       dispatch({ type: "INIT_TASKS", payload: res.data });
