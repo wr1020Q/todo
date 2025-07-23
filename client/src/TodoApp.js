@@ -10,17 +10,18 @@ import 'react-calendar/dist/Calendar.css';
 import { useTasks } from "./hooks/useGetTasks";
 import { useGetCategories } from "./hooks/useGetCategories"; 
 import {showError} from "./utils/toast";
+import { useAuth } from './context/AuthContext';
 
 export default function TodoApp() {
   const didFetchRef = useRef(false);
-  const { state, dispatch } = useContext(TaskContext);
-  const { isLoading} = state;
-  const [selectedDate] = useState(new Date());
+  const { state } = useContext(TaskContext);
+  const {categories} =   useContext(TaskContext);
+  const { loading} = useAuth();
   const { fetchTasks } = useTasks();
   const { fetchCategories } = useGetCategories();
 
+//初期データ取得
 useEffect(() => {
-  
 
   if (didFetchRef.current) return;
   didFetchRef.current = true;
@@ -35,16 +36,6 @@ useEffect(() => {
   fetchInitialData();
 }, []);
 
-  const {categories} =   useContext(TaskContext);
-  
-
-const tasksForSelectedDate = Array.isArray(state.tasks)
-  ? state.tasks.filter(
-      (task) =>
-        task.dueDate &&
-        new Date(task.dueDate).toDateString() === selectedDate.toDateString()
-    )
-  : [];
   
   return (
     <>
@@ -52,19 +43,20 @@ const tasksForSelectedDate = Array.isArray(state.tasks)
     <div className="p-4 max-w-md mx-auto bg-white shadow rounded-lg">
       <h1 className="text-xl font-bold mb-4">ToDo アプリ</h1>
 
-      {isLoading ? (
-      <p>読み込み中...</p>
+      {loading ? (
+        <p>読み込み中...</p>
       
-    ) : (
+      ):(
       <>
-      <TaskInput
-        categories={categories}
-      />
+        <TaskInput
+          categories={categories}
+        />
 
-      <TaskListWrapper
-        tasks={tasksForSelectedDate}
-        categories={categories}
-      />
+        <TaskListWrapper
+          tasks={state.tasks}
+          categories={categories}
+        />
+
         <CategoryInput/>
       </>
       )}

@@ -1,27 +1,37 @@
-import { useState } from "react";
+
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { registerSchema } from '../utils/schema';
+import { registerUser } from '../services/login';
+import { showError , showSuccess } from '../utils/toast';
+import { useNavigate } from 'react-router-dom';
 
-const  Register = ({ onLogin }) => {
-  const [user, setUser] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const  Register = () => {
+  
+  const [serverError, setServerError] = useState("");
+  const navigate = useNavigate();
   const {
       register,
       handleSubmit,
       formState: { errors },
   } = useForm({ resolver: yupResolver(registerSchema) });
   
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
    try {
-    
-    console.log("ログインデータ", data);
-
-  } catch (error) {
-    console.error("ログイン失敗:", error.message);
-  }
-};
+      const res = await registerUser(data);
+      console.log("登録データ", data);
+      showSuccess("ユーザーの登録をしました")
+      setServerError("")
+      navigate('/login');
+    } catch (error) {
+      console.error("登録失敗:", error.message);
+      if (error.response?.data?.message) {
+        setServerError(error.response.data.message); // サーバーからのエラーメッセージ
+      }
+      showError("ユーザーの登録に失敗しました")
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -33,9 +43,8 @@ const  Register = ({ onLogin }) => {
           </label>
           <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.user ? 'border-red-500' : ''}`} id="username" type="text" placeholder="ユーザー名"
             {...register("user")}
-            // value={user}
-            // onChange={(e) => setUser(e.target.value)}
           />
+          {serverError && (<p className="text-red-500 text-xs mt-2 italic">{serverError}</p>)}
           <p className="text-red-500 text-xs italic">{errors.user?.message}</p>
         </div>
             <div className="mb-4">
@@ -44,8 +53,6 @@ const  Register = ({ onLogin }) => {
           </label>
           <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.email ? 'border-red-500' : ''}`} id="email" type="text" placeholder="メールアドレス"
             {...register("email")}
-            // value={email}
-            // onChange={(e) => setEmail(e.target.value)}
           />
           <p className="text-red-500 text-xs italic">{errors.email?.message}</p>
         </div>
@@ -53,10 +60,8 @@ const  Register = ({ onLogin }) => {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
             パスワード
           </label>
-          <input className={`"shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" ${errors.password ? 'border-red-500' : ''}`} id="password" type="password" placeholder="パスワード"
+          <input className={`shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.password ? 'border-red-500' : ''}`} id="password" type="password" placeholder="パスワード"
             {...register("password")}
-            // value={password}
-            // onChange={(e) => setPassword(e.target.value)}
           />
           <p className="text-red-500 text-xs italic">{errors.password?.message}</p>
         </div>

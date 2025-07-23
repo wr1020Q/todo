@@ -1,28 +1,52 @@
-import { useState } from "react";
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { loginSchema } from '../utils/schema';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import {showError, showSuccess} from '../utils/toast';
+import { loginUser } from '../services/login';
 
-const  LoginForm = ({ onLogin }) => {
-  const [user, setUser] = useState("");
-  const [password, setPassword] = useState("");
 
+const  LoginForm = () => {
+  const { setUser } = useAuth();
+  const [passwordError, setPasswordError] = useState('');
+  const [userError, setUserError] = useState('');
+
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(loginSchema) });
 
-  const onSubmit = (data) => {
-   try {
-    
-    console.log("ログインデータ", data);
+  //ログイン情報を送信
+  const onSubmit = async (data) => {
+    try {
+      setUserError("")
+      setPasswordError("")
+      const res = await loginUser(data);
+      const user = res.user;
+      console.log("ログインデータ", res);
+      setUser(user);
 
-  } catch (error) {
-    console.error("ログイン失敗:", error.message);
-  }
- 
-};
+      navigate("/")
+      showSuccess(`おかえりなさい！ ${user.user}さん`)
+
+    } catch (error) {
+      const message = error.response?.data?.message;
+      console.error("ログイン失敗:", message);
+
+      if (message === 'ユーザーが違います') {
+        setUserError(message);
+      } else if (message === 'パスワードが違います') {
+        setPasswordError(message);
+      }else{
+        showError(message || "ログインに失敗しました");
+      }
+    }
+  };
+
  const onError = (errors) => console.log(errors);
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -32,22 +56,20 @@ const  LoginForm = ({ onLogin }) => {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
             ユーザー名
           </label>
-          <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.user ? 'border-red-500' : ''}`} id="username" type="text" placeholder="ユーザー名"
+          <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.user || userError ? 'border-red-500' : ''}`} id="username" type="text" placeholder="ユーザー名"
             {...register("user")}
-            // value={user}
-            // onChange={(e) => setUser(e.target.value)}
             />
+            {userError && <p className="text-red-500 text-xs italic">{userError}</p>}
             <p className="text-red-500 text-xs italic">{errors.user?.message}</p>
         </div>
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
             パスワード
           </label>
-          <input className={`shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700  leading-tight focus:outline-none focus:shadow-outline ${errors.password ? 'border-red-500' : ''}`}  id="password" type="password" placeholder="パスワード"
+          <input className={`shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700  leading-tight focus:outline-none focus:shadow-outline ${errors.password || passwordError ? 'border-red-500' : ''}`}  id="password" type="password" placeholder="パスワード"
             {...register("password")}
-            // value={password}
-            // onChange={(e) => setPassword(e.target.value)}
             />
+            {passwordError && <p className="text-red-500 text-xs italic">{passwordError}</p>}
             <p className="text-red-500 text-xs italic">{errors.password?.message}</p>
         </div>
         <div className="flex justify-end">
@@ -62,6 +84,6 @@ const  LoginForm = ({ onLogin }) => {
     </div>
     </div>   
   );
-}
+};
 
 export default LoginForm;

@@ -3,6 +3,7 @@
 import {React ,useEffect,useState}from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function TaskItem({
   task,
@@ -17,7 +18,8 @@ export default function TaskItem({
 }) {
   const isEditing = editingTaskId === task._id;
   const [localEditText, setLocalEditText] = useState("");
-  
+  const { user  } = useAuth();
+
   useEffect(() => {
     if (isEditing) {
       setLocalEditText(task.text); // 編集開始時だけセット
@@ -48,7 +50,7 @@ export default function TaskItem({
           onChange={(e) => setLocalEditText(e.target.value)}
           onBlur={() => handleUpdateTask(task._id, localEditText)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && task.user === user.id) {
               e.preventDefault(); 
               handleUpdateTask(task._id, localEditText);
             }     

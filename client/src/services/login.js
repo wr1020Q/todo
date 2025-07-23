@@ -1,14 +1,42 @@
 import apiClient from './apiClient';
 
-export const login = async (email, password) => {
-  const res = await fetch("http://localhost:3000/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+//新規登録
+export const registerUser = async (registerData) => {
+  try {
+    const res = await apiClient.post("/auth/register", registerData);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
 
-  if (!res.ok) throw new Error("ログイン失敗");
-  const data = await res.json();
-  localStorage.setItem("token", data.token);
-  return data;
+//ログイン
+export const loginUser = async (loginData) => {
+  try {
+    const res = await apiClient.post("/auth/login", loginData);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+//ページリロード
+export const refreshUser = async () => {
+  try {
+    const res = await apiClient.get("/auth/refresh");
+    return res.data;
+  } catch (err) {
+    console.error('リフレッシュエラー:', err);
+    throw err;
+  }
+};
+
+//ログアウト
+export const logoutUser = async () => {
+  try {
+    const res = await apiClient.post("/auth/logout");
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
 };

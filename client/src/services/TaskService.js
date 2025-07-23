@@ -61,7 +61,7 @@ try {
 export const addCategoryAPI = async (title) => {
 try {
   console.log("addCategoryAPI",title)
-    const res = await apiClient.post('/categories', { category: title });
+    const res = await apiClient.post('/categories', { title });
     return res.data;
   } catch (err) {
     console.error('カテゴリー追加エラー:', err);

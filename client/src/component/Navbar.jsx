@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user , logout } = useAuth();
 
   return (
     <>
@@ -28,12 +30,23 @@ export default function Navbar() {
         }`}
       >
         <div className="text-sm lg:flex-grow">
-          <Link to="/login" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">ログイン</Link>
-          <Link to="/register" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">新規登録</Link>
-          <Link to="/calendar" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white">カレンダー</Link>
+          {user ? (
+            <>
+              <Link to="/register" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">新規登録</Link>
+              <p onClick={logout} className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">ログアウト</p>
+            </>
+          ):(
+              <Link to="/login" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">ログイン</Link>
+          )}
+          <Link to="/calendar" className="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">カレンダー</Link>
+
         </div>
         <div>
-          <a href="#" className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Download</a>
+          {user ? (
+            <a href="#" className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">{user.user} さん</a>
+          ):(
+            <a href="#" className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">ゲスト さん</a>
+            )}
         </div>
       </div>
     </nav>

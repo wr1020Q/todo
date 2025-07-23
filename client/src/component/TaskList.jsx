@@ -9,6 +9,7 @@ import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateComplet
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import TaskItem from "./TaskItem";
+import { useAuth } from '../context/AuthContext';
 
 export default function TaskList({ tasks = [],categories = [],setEditText }) {
   
@@ -19,6 +20,7 @@ export default function TaskList({ tasks = [],categories = [],setEditText }) {
   const [categoryEdit, setCategoryEdit] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [errorMessageCat, setErrorMessageCat] = useState("");
+   const { user  } = useAuth();
 
   console.log("受け取ったLIST内 tasks:", tasks);
   console.log("受け取ったLIST内 categories:", categories);
@@ -27,7 +29,7 @@ export default function TaskList({ tasks = [],categories = [],setEditText }) {
   const startEditing = (taskId, currentText) => {
     setEditingTaskId(taskId);
     setEditText(currentText);
-     setErrorMessage("");
+    setErrorMessage("");
   };
 
   const startEditingCat = (catId, currentText) => {
@@ -183,7 +185,7 @@ return (
               <>
                 <h2 
                     onDoubleClick={() => {
-                      if (cat.title !== "未分類") {
+                      if (cat.title !== "未分類"  &&  cat.user === user.id) {
                         startEditingCat(cat._id, cat.title);
                       }
                     }}
@@ -191,7 +193,7 @@ return (
                 >
                   {cat.title}
                 </h2>
-                {cat.title !== "未分類" && (
+                {cat.title !== "未分類" &&  cat.user === user.id &&(
                   <button
                     onClick={() => removeCategory(cat._id, cat.title)}
                     className="text-red-500 text-sm"

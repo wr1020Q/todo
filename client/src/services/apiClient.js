@@ -1,10 +1,9 @@
 import axios from 'axios';
-import { notifyErrorMessage } from '../utils/errorNotifier';
-import { showError } from '../utils/toast';
 
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api',  
+  baseURL: 'http://localhost:3000/api', 
+  withCredentials: true, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,18 +11,18 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(function (config) {
+    const token = localStorage.getItem('token'); 
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   }, function (error) {
     return Promise.reject(error);
   });
 
   apiClient.interceptors.response.use(function (response) {
-
     return response;
   }, function (error) {
-      const msg = error.response?.data?.message || '通信エラーが発生しました';
-      // showError(msg)
-      // notifyErrorMessage(msg);
     return Promise.reject(error);
   });
 

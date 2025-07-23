@@ -1,25 +1,35 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const path = require('path')
-const { success, error ,wrapperAsync} = require('./utils/responseWrapper');
-const { tasksSchema ,partialTaskSchema} = require('../schemas');
-const ExpressError = require('./utils/expressError');
-const {Task} = require('./models/taskschema'); 
-const {Category} = require('./models/categoryschema'); 
-const categoryRoutes = require('./routes/categories');
-const authRoutes = require("./routes/auth.js");
-const { verifyToken } = require("./middleware/verifyToken.js");
-const { title } = require('process');
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import path from 'path'
+import { fileURLToPath } from 'url';
+import { success, error ,wrapperAsync} from './utils/responseWrapper.js';
+import { tasksSchema ,partialTaskSchema} from '../schemas.js';
+import ExpressError from './utils/expressError.js';
+import {Task} from './models/taskschema.js'; 
+import {Category} from './models/categoryschema.js'; 
+import categoryRoutes from './routes/categories.js';
+import authRoutes from './routes/auth.js'
+import { verifyToken } from "./middleware/verifyToken.js";
+import { title } from 'process';
+import cookieParser from "cookie-parser";
+import dotenv from 'dotenv';
 
+dotenv.config()
 const app = express();
 const PORT = 3000;
 
-// dotenv.config();
+;
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5000',  // フロントのURLを明示的に指定
+  credentials: true,                // Cookieの送受信を許可
+}));
 app.use(express.urlencoded({ extended: true }));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(cookieParser());
 
 mongoose.connect('mongodb://localhost:27017/todo-app', {
   useNewUrlParser: true,
@@ -80,7 +90,7 @@ const validateUpdateTask = (req, res, next) => {
 }
 
 app.use('/api/categories', categoryRoutes);
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get('/',(req,res)=>{
     res.send('hello world')
@@ -91,9 +101,10 @@ app.get('/',(req,res)=>{
 // });
 
 //初期データ取得
-app.get('/api/tasks', async (req, res) => {
+app.get('/api/tasks', verifyToken , async (req, res) => {
   try {
-    const tasks = await Task.find().populate('category');
+    console.log("認証ユーザー:", req.user);
+    const tasks = await Task.find({ user: req.user.id }).populate('category');
     // console.log("GET:", tasks);
     success(res, tasks, 'タスク一覧を取得しました');
   } catch (error) {
@@ -103,7 +114,7 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 //追加
-  app.post('/api/tasks', validateTask,async (req, res) => {
+  app.post('/api/tasks', verifyToken , validateTask,async (req, res) => {
   try {
     const { text, priority, category, dueDate } = req.body;
 
@@ -114,7 +125,8 @@ app.get('/api/tasks', async (req, res) => {
       text,
       priority,
       category: categoryId, 
-      dueDate
+      dueDate,
+      user: req.user.id,
     });
 
     await task.save();
@@ -126,7 +138,7 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 //更新
-app.patch('/api/tasks/:id',validateUpdateTask,async (req, res) => {
+app.patch('/api/tasks/:id', verifyToken , validateUpdateTask,async (req, res) => {
   try {
 
     const updated = await Task.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
@@ -142,9 +154,9 @@ app.patch('/api/tasks/:id',validateUpdateTask,async (req, res) => {
 });
 
 //削除
-app.delete('/api/tasks/:id', async (req, res) => {
+app.delete('/api/tasks/:id',  verifyToken , async (req, res) => {
   try {
-    await Task.findByIdAndDelete(req.params.id);
+    await Task.findByIdAndDelete({_id:req.params.id , user:req.user.id,});
     res.json({ message: '削除成功' });
   } catch (err) {
     return error(res, '削除失敗', 500);

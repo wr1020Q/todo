@@ -15,6 +15,11 @@ const taskSchema = new Schema({
   priority: Number,
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   dueDate: Date,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    }
 });
 
 const Task = mongoose.model('Task', taskSchema);
@@ -29,15 +34,17 @@ const seedTasks = [
     text: 'レポートを提出',
     completed: false,
     priority: 2,
-    category: '684037cb63a9c5c010dc3fc9',     // ← ここがカテゴリと紐づく
-    dueDate: new Date('2025-06-01')
+    category: '687d96f2b63c3d1b8665d98e',    
+    dueDate: new Date('2025-06-01'),
+    user:'687c5d3ed581bbeb9498b939'
   },
   {
     text: '掃除する',
     completed: false,
     priority: 1,
-    category: '684037cb63a9c5c010dc3fca',     // ← ここも
-    dueDate: new Date('2025-05-28')
+    category: '687d96f2b63c3d1b8665d98f',  
+    dueDate: new Date('2025-05-28'),
+    user:'687c5d3ed581bbeb9498b939'
   },
 ];
   

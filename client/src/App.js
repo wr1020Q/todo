@@ -12,6 +12,7 @@ import  CalendarTodo  from "./page/Calendar";
 import  LoginForm  from "./page/LoginForm.jsx";
 import  Register  from "./page/register.jsx";
 import TodoApp from "./TodoApp";
+import { AuthProvider } from './context/AuthContext';
 
 const AppContent = () => {
    const { setError } = useContext(ErrorContext);
@@ -30,26 +31,23 @@ const AppContent = () => {
 };
 
 function App() {
-console.log('CalendarTodo:', CalendarTodo);
-console.log('LoginForm:', LoginForm);
-//   console.log('ErrorContextModule:', ErrorContextModule);
-//  console.log('ErrorBanner:', ErrorBanner);
-// console.log('TodoApp:', TodoApp);
-// console.log('TaskProvider:', TaskProvider);
-// console.log('ErrorProvider:', ErrorProvider);
+  
   return (
     <ErrorProvider>
     <TaskProvider>
        <BrowserRouter>
+        <AuthProvider>
           <Routes>
-          <Route path="/calendar" element={<CalendarTodo />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<TodoApp />} />
-        </Routes>
+            <Route path="/calendar" element={<CalendarTodo />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<TodoApp />} />
+          </Routes>
          <ToastContainer position="top-center" autoClose={3000} />
         <AppContent />
+         </AuthProvider>
       </BrowserRouter>
+     
     </TaskProvider>
     </ErrorProvider>
 
