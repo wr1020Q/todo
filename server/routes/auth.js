@@ -3,7 +3,7 @@ import cors from 'cors';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { success, error, wrapperAsync } from '../utils/responseWrapper.js';
-import User from '../models/User.js'; 
+import {User} from '../models/User.js'; 
 import cookieParser from"cookie-parser";
 import loginLimiter from"../middleware/loginLimiter.js";
 import RefreshToken from '../models/refreshTokenschema.js';

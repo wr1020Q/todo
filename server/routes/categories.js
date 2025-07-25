@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { Category } from '../models/categoryschema.js';
 import { Task } from '../models/taskschema.js';
-import { categorySchema } from '../schemas.js';
+import  {categorySchema } from '../schemas.js';
 import { success, error ,wrapperAsync} from '../utils/responseWrapper.js';
 import { verifyToken } from "../middleware/verifyToken.js";
 import ExpressError from '../utils/expressError.js';
