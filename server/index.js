@@ -21,11 +21,12 @@ import xssClean from 'xss-clean';
 dotenv.config()
 const app = express();
 const PORT = process.env.PORT || 3000;
+const URL = process.env.URL;
 
 ;
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5000', 
+  origin: URL, 
   credentials: true,               
 }));
 app.use(express.urlencoded({ extended: true }));
