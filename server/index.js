@@ -14,6 +14,10 @@ import { verifyToken } from "./middleware/verifyToken.js";
 import { title } from 'process';
 import cookieParser from "cookie-parser";
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import mongoSanitize from'express-mongo-sanitize';
+import xssClean from 'xss-clean';
+
 
 dotenv.config()
 const app = express();
@@ -22,14 +26,37 @@ const PORT = 3000;
 ;
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5000',  // フロントのURLを明示的に指定
-  credentials: true,                // Cookieの送受信を許可
+  origin: 'http://localhost:5000', 
+  credentials: true,               
 }));
 app.use(express.urlencoded({ extended: true }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(cookieParser());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    }
+  },
+  frameguard: { action: 'deny' },
+  referrerPolicy: { policy: 'no-referrer-when-downgrade' },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+app.use(mongoSanitize());
+app.use(xssClean());
 
 mongoose.connect('mongodb://localhost:27017/todo-app', {
   useNewUrlParser: true,
@@ -95,10 +122,6 @@ app.use("/api/auth", authRoutes);
 app.get('/',(req,res)=>{
     res.send('hello world')
 });
-// 保護されたルート例（後でverifyTokenで保護する）
-// app.get("/api/protected", verifyToken,(req, res) => {
-//   res.send(`こんにちは ${req.user.email} さん`);
-// });
 
 //初期データ取得
 app.get('/api/tasks', verifyToken , async (req, res) => {

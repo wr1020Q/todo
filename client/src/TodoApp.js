@@ -1,5 +1,5 @@
 
-import { useState, useEffect,useRef } from "react";
+import { useEffect,useRef } from "react";
 import TaskInput from "./component/TaskInput";
 import Navbar from "./component/Navbar";
 import { TaskContext } from "./context/TaskContext";
@@ -30,7 +30,7 @@ useEffect(() => {
     try {
       await Promise.all([fetchTasks(), fetchCategories()]);
     } catch {
-      showError("初期データの取得に失敗しました。サーバーをご確認ください。");
+        showError("初期データの取得に失敗しました。");
     }
   };
   fetchInitialData();
@@ -40,7 +40,7 @@ useEffect(() => {
   return (
     <>
     <Navbar />
-    <div className="p-4 max-w-md mx-auto bg-white shadow rounded-lg">
+    <div className="p-4 max-w-md mx-auto bg-white shadow rounded-lg mt-5">
       <h1 className="text-xl font-bold mb-4">ToDo アプリ</h1>
 
       {loading ? (

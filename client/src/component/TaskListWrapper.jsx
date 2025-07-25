@@ -53,7 +53,7 @@ export default function TaskListWrapper({categories}) {
     <>
       <input
         type="text"
-        placeholder="キーワードで検索"
+        placeholder="タスク名で検索"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="border p-2 rounded mb-2"

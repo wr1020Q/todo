@@ -6,12 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {showError, showSuccess} from '../utils/toast';
 import { loginUser } from '../services/login';
+import Navbar from "../component/Navbar";
 
 
 const  LoginForm = () => {
   const { setUser } = useAuth();
-  const [passwordError, setPasswordError] = useState('');
-  const [userError, setUserError] = useState('');
+  const [serverError, setServerError] = useState('');
 
   const navigate = useNavigate();
   const {
@@ -23,53 +23,52 @@ const  LoginForm = () => {
   //ログイン情報を送信
   const onSubmit = async (data) => {
     try {
-      setUserError("")
-      setPasswordError("")
+      console.log("送信データ", data);
+      setServerError("")
       const res = await loginUser(data);
+      if (!res || !res.user) {
+        throw new Error("レスポンスにユーザーデータが含まれていません");
+      }
       const user = res.user;
       console.log("ログインデータ", res);
       setUser(user);
-
       navigate("/")
       showSuccess(`おかえりなさい！ ${user.user}さん`)
 
     } catch (error) {
-      const message = error.response?.data?.message;
-      console.error("ログイン失敗:", message);
-
-      if (message === 'ユーザーが違います') {
-        setUserError(message);
-      } else if (message === 'パスワードが違います') {
-        setPasswordError(message);
-      }else{
-        showError(message || "ログインに失敗しました");
-      }
+        console.log('キャッチしたエラー', error);
+    if (error.response) {
+      console.log('レスポンスデータ', error.response.data);
+    }
+        const message = error.response?.data?.message || "ログインに失敗しました";
+        setServerError(message);
     }
   };
 
  const onError = (errors) => console.log(errors);
   return (
+    <>
+    <Navbar />
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
     <div className="w-full max-w-xs">
       <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(onSubmit,onError)}>
         <div className="mb-4">
+          {serverError && <p className="text-red-500 text-xs italic">{serverError}</p>}
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-            ユーザー名
+            メールアドレス
           </label>
-          <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.user || userError ? 'border-red-500' : ''}`} id="username" type="text" placeholder="ユーザー名"
-            {...register("user")}
+          <input className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.email || serverError ? 'border-red-500' : ''}`} id="username" type="text" placeholder="ユーザー名"
+            {...register("email")}
             />
-            {userError && <p className="text-red-500 text-xs italic">{userError}</p>}
-            <p className="text-red-500 text-xs italic">{errors.user?.message}</p>
+            <p className="text-red-500 text-xs italic">{errors.email?.message}</p>
         </div>
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
             パスワード
           </label>
-          <input className={`shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700  leading-tight focus:outline-none focus:shadow-outline ${errors.password || passwordError ? 'border-red-500' : ''}`}  id="password" type="password" placeholder="パスワード"
+          <input className={`shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700  leading-tight focus:outline-none focus:shadow-outline ${errors.password || serverError ? 'border-red-500' : ''}`}  id="password" type="password" placeholder="パスワード"
             {...register("password")}
             />
-            {passwordError && <p className="text-red-500 text-xs italic">{passwordError}</p>}
             <p className="text-red-500 text-xs italic">{errors.password?.message}</p>
         </div>
         <div className="flex justify-end">
@@ -82,7 +81,8 @@ const  LoginForm = () => {
         &copy;2020 Acme Corp. All rights reserved.
       </p>
     </div>
-    </div>   
+    </div>
+  </>   
   );
 };
 

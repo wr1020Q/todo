@@ -15,11 +15,13 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       try {
         const res = await refreshUser(); // リフレッシュAPI
+        console.log("リフレッシュ",res);
         setUser(res.user); // 返ってきたユーザー情報をセット
       } catch (err) {
         console.error('リフレッシュエラー AUTH:', err);
         setUser(null);
         await logoutUser();
+        navigate("/login");
       } finally {
         setLoading(false);
       }

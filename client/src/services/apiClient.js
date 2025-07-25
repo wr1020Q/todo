@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {refreshUser} from "./login.js"
 
 
 const apiClient = axios.create({
@@ -10,20 +11,18 @@ const apiClient = axios.create({
   timeout: 5000, 
 });
 
-apiClient.interceptors.request.use(function (config) {
-    const token = localStorage.getItem('token'); 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+axios.interceptors.request.use(function (config) {
     return config;
   }, function (error) {
     return Promise.reject(error);
   });
 
-  apiClient.interceptors.response.use(function (response) {
+axios.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
     return Promise.reject(error);
   });
+
+
 
 export default apiClient;

@@ -16,6 +16,8 @@ export const loginUser = async (loginData) => {
     const res = await apiClient.post("/auth/login", loginData);
     return res.data;
   } catch (err) {
+    console.log("ログインエラーAXIO")
+    console.log("ログインエラーF",err)
     throw err;
   }
 };

@@ -6,11 +6,8 @@ import { TaskContext } from "../context/TaskContext";
 import { useContext } from "react"; 
 
 export default function CategoryInput() {
-      const {
-        newCategory,
-        setNewCategory,
-        addCategory
-    } =   useContext(TaskContext);
+    
+    const {newCategory, setNewCategory, addCategory } =   useContext(TaskContext);
     const {
       register,
       handleSubmit,
@@ -18,10 +15,12 @@ export default function CategoryInput() {
     } = useForm({
       resolver: yupResolver(addCategorySchema),
     });
+
     const onSubmit = async (data) => {
-    console.log('送信データ:', data);
-    addCategory();
-  };
+      setNewCategory("")
+      console.log('送信データ:', data);
+      await addCategory();
+    };
     return (
             <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
               <input

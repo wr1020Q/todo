@@ -5,18 +5,20 @@ import jwt from "jsonwebtoken";
 import { success, error, wrapperAsync } from '../utils/responseWrapper.js';
 import User from '../models/User.js'; 
 import cookieParser from"cookie-parser";
+import loginLimiter from"../middleware/loginLimiter.js";
+import RefreshToken from '../models/refreshTokenschema.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const router = express.Router();
 router.use(cors({
-  origin: 'http://localhost:5000',  // フロントのURLを明示的に指定
-  credentials: true,                // Cookieの送受信を許可
+  origin: process.env.NODE_ENV === 'production'
+  ? 'https://yourdomain.com'
+  : 'http://localhost:5000',
+  credentials: true,                
 }));
 router.use(express.json());
 router.use(cookieParser());
-
-const users = []; // テスト用（本番はDB）
 
 // 新規登録
 router.post("/register", async (req, res) => {
@@ -35,8 +37,8 @@ router.post("/register", async (req, res) => {
       await userData.save();
 
       // JWT作成
-      const token = jwt.sign({ id: userData._id, email: userData.email, user: userData.user }, process.env.JWT_SECRET, {
-        expiresIn: "1d",
+      const token = jwt.sign({ id: userData._id ,user: userData.user}, process.env.JWT_SECRET, {
+        expiresIn: "1h",
       });
 
       // JWTをHttpOnly Cookieにセット
@@ -44,11 +46,10 @@ router.post("/register", async (req, res) => {
         httpOnly: true,
         sameSite: "Lax",
         secure: process.env.NODE_ENV === "production", // 本番では true
-        maxAge: 1000 * 60 * 60 * 24,
-        Path:"/" 
+        maxAge: 1000 * 60 * 15,
       });
 
-      return res.status(201).json({ message: "登録成功", user: { email: user.email } });
+      return res.status(201).json({ message: "登録成功" });
   } catch (err) {
       console.error("新規登録に失敗:サーバーエラー", err); 
       return error(res, '新規登録に失敗しました', 500);
@@ -56,26 +57,35 @@ router.post("/register", async (req, res) => {
 });
 
 //ログイン
-router.post("/login", async (req, res) => {
+router.post("/login" , loginLimiter , async (req, res) => {
   try{
-      const { user, password } = req.body;
+      const { email, password } = req.body;
 
-      const userData = await User.findOne({ user });
-      if (!userData) return error(res, 'ユーザーが違います', 401);
+      const userData = await User.findOne({ email });
+      console.log("userData",userData)
+      if (!userData) return error(res, 'メールアドレスかパスワードが違います', 401);
   
       const match = await bcrypt.compare(password, userData.password);
-      if (!match) return error(res, 'パスワードが違います', 401);
+      console.log("match",match)
+      if (!match) return error(res, 'メールアドレスかパスワードが違います', 401);
 
       //JWT発行
-      const token = jwt.sign({ id: userData._id, email: userData.email, user: userData.user }, process.env.JWT_SECRET, { expiresIn: "1h" });
-      const refreshToken = jwt.sign({ id: userData._id, email: userData.email, user: userData.user }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: userData._id , user: userData.user}, process.env.JWT_SECRET, { expiresIn: "1h" });
+      const refreshToken = jwt.sign({ id: userData._id , user: userData.user}, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+
+      // DBに保存
+      await RefreshToken.create({
+        userId: userData._id,
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
       // クッキーにトークンを保存
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false, // 本番のみHTTPS
+        secure: process.env.NODE_ENV === 'production', // 本番のみHTTPS
         sameSite: "Lax",
-        maxAge: 1000 * 60 * 60 * 24, // 1日
-        Path:"/" 
+        maxAge: 1000 * 60 * 15,  
       });
 
       res.cookie('refreshToken', refreshToken, {
@@ -83,57 +93,73 @@ router.post("/login", async (req, res) => {
         sameSite: 'Lax',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 1000 * 60 * 60 * 24 * 7,// 7日
-        Path:"/" 
       });
 
-      return res.status(200).json({ user: { id: userData._id, email: userData.email, user: userData.user } });
+      return res.status(200).json({ user: { id: userData._id ,user: userData.user} });
   } catch (err) {
       console.error("ログイン失敗:サーバーエラー", err); 
       return error(res, 'ログインに失敗しました', 500);
   }
 });
 
-router.get('/refresh', (req, res) => {
+router.get('/refresh', async(req, res) => {
   const refreshToken = req.cookies.refreshToken;
+  console.log("refresh",refreshToken)
   if (!refreshToken) {
-    return res.status(401).json({ message: 'リフレッシュトークンがありません' });
+    return res.status(401).json({ message: '認証できませんでした' });
   }
   try {
+    //DBにリフレッシュトークンがあるか
+    const storedToken = await RefreshToken.findOne({ token: refreshToken });
+    console.log("storedToken",storedToken)
+    if (!storedToken) return res.status(403).json({ message: '認証できませんでした' });
+
     const payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
     // 新しいアクセストークン発行
-    const accessToken = jwt.sign({ id: payload.id, email: payload.email, user: payload.user }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const accessToken = jwt.sign({ id: payload.id ,user: payload.user  }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.cookie('token', accessToken, {
       httpOnly: true,
       sameSite: 'Lax',
-      secure: false,
-      maxAge: 1000 * 60 * 60 * 24,
-      Path:"/" 
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 15,
     });
 
-    return res.status(200).json({ user: { id: payload.id, email: payload.email, user: payload.user } }); // 必要に応じてユーザー情報も入れてOK
+    return res.status(200).json({ user: { id: payload.id , user: payload.user } }); 
   } catch (err) {
-    return res.status(401).json({ message: '無効なリフレッシュトークン' });
+    return res.status(401).json({ message: '認証できませんでした' });
   }
 });
 
 //ログアウト
-router.post("/logout", (req, res) => {
+router.post("/logout", async(req, res) => {
 
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: false,// 本番のみHTTPS
-    sameSite: "Lax",
-    Path:"/" 
-  });
+  try{
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      await RefreshToken.deleteOne({ token: refreshToken });
+    }
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: false,// 本番のみHTTPS
-    sameSite: "Lax",
-    Path:"/" 
-  });
-  res.json({ message: "ログアウトしました" });
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',// 本番のみHTTPS
+      sameSite: "Lax",
+      Path:"/" 
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',// 本番のみHTTPS
+      sameSite: "Lax",
+      Path:"/" 
+    });
+
+    res.json({ message: "ログアウトしました" });
+
+  } catch (err) {
+    return res.status(401).json({ message: 'ログアウト失敗' });
+  }
+
 });
 
 export default router;

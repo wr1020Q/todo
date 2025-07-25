@@ -2,20 +2,15 @@ import { TaskContext } from "../context/TaskContext";
 import { useContext } from "react"; 
 import TaskForm from "./TaskForm";
 
-
-export default function TaskInput({ 
-  categories,  
-}) {
+export default function TaskInput({ categories, }) {
   const { state, dispatch } = useContext(TaskContext);
-  const { dueDate ,categoryFilter} = state;
-
-
+  const { categoryFilter} = state;
 
   console.log('現在のcategoryFilter,INPUT:', categoryFilter); 
   console.log('現在のcategories,INPUT:', categories);
 
   return (
-    <div className="flex mb-4">
+    <div className="flex mb-4 ">
       <TaskForm categories = {categories}/>
       <p>カテゴリーで絞り込み：</p>
           {Array.isArray(categories) ?(categories.map((category) => (

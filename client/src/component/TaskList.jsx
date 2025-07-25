@@ -185,7 +185,7 @@ return (
               <>
                 <h2 
                     onDoubleClick={() => {
-                      if (cat.title !== "未分類"  &&  cat.user === user.id) {
+                      if (cat.title !== "未分類"  && (!user || cat.user === user.id)) {
                         startEditingCat(cat._id, cat.title);
                       }
                     }}
@@ -193,7 +193,7 @@ return (
                 >
                   {cat.title}
                 </h2>
-                {cat.title !== "未分類" &&  cat.user === user.id &&(
+                {cat.title !== "未分類" &&  (!user || cat.user === user.id) &&(
                   <button
                     onClick={() => removeCategory(cat._id, cat.title)}
                     className="text-red-500 text-sm"

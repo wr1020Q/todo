@@ -9,8 +9,10 @@ import ExpressError from '../utils/expressError.js';
 
 const router = express.Router();
 router.use(cors({
-  origin: 'http://localhost:5000',  // フロントのURLを明示的に指定
-  credentials: true,                // Cookieの送受信を許可
+  origin: process.env.NODE_ENV === 'production'
+  ? 'https://yourdomain.com'
+  : 'http://localhost:5000',
+  credentials: true,              
 }));
 router.use(express.json());
 
