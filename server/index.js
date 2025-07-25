@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import path from 'path'
 import { fileURLToPath } from 'url';
 import { success, error ,wrapperAsync} from './utils/responseWrapper.js';
-import { tasksSchema ,partialTaskSchema} from '../schemas.js';
+import { tasksSchema ,partialTaskSchema} from './schemas.js';
 import ExpressError from './utils/expressError.js';
 import {Task} from './models/taskschema.js'; 
 import {Category} from './models/categoryschema.js'; 
