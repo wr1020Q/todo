@@ -11,7 +11,6 @@ import {Category} from './models/categoryschema.js';
 import categoryRoutes from './routes/categories.js';
 import authRoutes from './routes/auth.js'
 import { verifyToken } from "./middleware/verifyToken.js";
-import { title } from 'process';
 import cookieParser from "cookie-parser";
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -21,7 +20,7 @@ import xssClean from 'xss-clean';
 
 dotenv.config()
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 ;
 app.use(express.json());
