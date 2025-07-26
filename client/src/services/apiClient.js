@@ -1,9 +1,8 @@
 import axios from 'axios';
-import {refreshUser} from "./login.js"
 
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api', 
+  baseURL: `${process.env.REACT_APP_API_BASE_URL}/api`, 
   withCredentials: true, 
   headers: {
     'Content-Type': 'application/json',

@@ -58,7 +58,8 @@ app.use(helmet({
 app.use(mongoSanitize());
 app.use(xssClean());
 
-mongoose.connect('mongodb://localhost:27017/todo-app', {
+const mongoUri = process.env.MONGODB_URI;
+mongoose.connect(mongoUri ||'mongodb://localhost:27017/todo-app', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })

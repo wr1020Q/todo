@@ -67,8 +67,8 @@
   "bugs": {
     "url": "https://github.com/wr1020Q/todo/issues"
   },
-  "engines": {
-  "node": "18.x"
+"engines": {
+  "node": "22.x"
 },
   "msw": {
     "workerDirectory": [
