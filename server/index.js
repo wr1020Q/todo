@@ -22,8 +22,8 @@ dotenv.config()
 const app = express();
 const PORT = process.env.PORT || 3000;
 const URL = process.env.URL;
+console.log("URL,",URL)
 
-;
 app.use(express.json());
 app.use(cors({
   origin: URL, 
@@ -59,7 +59,8 @@ app.use(mongoSanitize());
 app.use(xssClean());
 
 const mongoUri = process.env.MONGODB_URI;
-mongoose.connect(mongoUri ||'mongodb://localhost:27017/todo-app', {
+console.log("mongoUri",mongoUri)
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
