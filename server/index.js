@@ -30,9 +30,9 @@ app.use(cors({
   credentials: true,               
 }));
 app.use(express.urlencoded({ extended: true }));
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use(express.static(path.join(__dirname, '../client/build')));
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(cookieParser());
 app.use(helmet({
   contentSecurityPolicy: {
@@ -188,9 +188,9 @@ app.delete('/api/tasks/:id',  verifyToken , async (req, res) => {
   }
 });
 
-app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
-});
+// app.get('/*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
 
 app.all('*', (req, res, next) => {
     next(new ExpressError('ページが見つかりませんでした', 404));
