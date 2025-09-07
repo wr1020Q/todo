@@ -6,14 +6,23 @@ import  {categorySchema } from '../schemas.js';
 import { success, error ,wrapperAsync} from '../utils/responseWrapper.js';
 import { verifyToken } from "../middleware/verifyToken.js";
 import ExpressError from '../utils/expressError.js';
+import cookieParser from"cookie-parser";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
+const allowedOrigin = process.env.NODE_ENV === "production"
+  ? process.env.URL
+  : "http://localhost:5000";
+
 router.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-  ? 'https://yourdomain.com'
-  : 'http://localhost:5000',
-  credentials: true,              
+  origin: allowedOrigin, 
+  credentials: true,               
 }));
+
+console.log("allowedOrigin",allowedOrigin)
+router.use(express.json());
+router.use(cookieParser());
 router.use(express.json());
 
 //カテゴリーバリデーション

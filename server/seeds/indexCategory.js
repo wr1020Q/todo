@@ -1,24 +1,28 @@
-// seedCategories.js
+
 
 const mongoose = require('mongoose');
 const { model, models, Schema } = mongoose;
 
-// MongoDB 接続 URL（適宜書き換えてください）
 const MONGODB_URI = 'mongodb://localhost:27017/todo-app';
 
 // Category モデル定義
 const categorySchema = new Schema({
-  title: { type: String, required: true, unique: true }
+  title: { type: String, required: true, unique: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    }
 });
 
 const Category = models.Category || model('Category', categorySchema);
 
 // シードデータ
 const categories = [
-  { title: '仕事' },
-  { title: '家事' },
-  { title: '勉強' },
-  {title: '健康' },
+  { title: '仕事' ,user:'687c5d3ed581bbeb9498b939'},
+  { title: '家事' ,user:'687c5d3ed581bbeb9498b939'},
+  { title: '勉強' ,user:'687c5d3ed581bbeb9498b939'},
+  {title: '健康' ,user:'687c5d3ed581bbeb9498b939'},
 ];
 
 // MongoDB 接続 → データ挿入

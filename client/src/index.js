@@ -7,18 +7,18 @@ import reportWebVitals from './reportWebVitals';
 import { worker } from './mocks/browser';
 
 async function main() {
-  if (process.env.NODE_ENV === 'development') {
-  const { worker } = require('./mocks/browser');
-  worker.start();
-}
+//   if (process.env.NODE_ENV === 'development') {
+//   const { worker } = require('./mocks/browser');
+//   worker.start();
+// }
   // if (process.env.NODE_ENV === 'development') {
   //   await worker.start();
   // }
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <App />
-  </React.StrictMode>
+  /* </React.StrictMode> */
 );
 
 // If you want to start measuring performance in your app, pass a function

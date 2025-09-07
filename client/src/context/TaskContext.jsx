@@ -6,7 +6,7 @@ export const TaskContext = createContext();
 const initialState = {
   tasks: [],
   // editText: "",
-  isLoading: true,
+  // isLoading: true,
   categoryFilter: [],
   sortBy: "deadlineAsc", 
 };
@@ -16,11 +16,13 @@ const taskReducer = (state, action) => {
         case "INIT_TASKS":
             return {
                 ...state,
-                tasks: action.payload,
-                isLoading: false
+                tasks: action.payload
+                // isLoading: false
             };
         case "ADD_TASK":
-          console.log("ADD_TASK")
+            console.log("ADD_TASK")
+            const exists = state.tasks?.some(task => task._id === action.payload._id);
+            if (exists) return state;
             return {
               ...state,
               tasks: [...(state.tasks || []), action.payload],
@@ -111,18 +113,17 @@ const taskReducer = (state, action) => {
 
   const [state, dispatch] = useReducer(taskReducer, initialState);
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState("");
 
-  const addCategory = async () => {
-    if (newCategory && categories.some(c => c.title === newCategory)) {
+
+  const addCategory = async (data) => {
+    if (data && categories.some(c => c.title === data.title)) {
         showError("このカテゴリーは既に存在します");
         return;
     }
       try {
-        console.log("新しいカテゴリー",newCategory)
-        const updated = await addCategoryAPI(newCategory);
+        console.log("新しいカテゴリー",data)
+        const updated = await addCategoryAPI(data.title);
         setCategories(prev => [...prev, updated.data]); 
-        setNewCategory("");
         showSuccess("カテゴリーを追加しました")
       } catch (err) {
         showError("カテゴリーを追加できませんでした")
@@ -155,8 +156,7 @@ return (
         dispatch,
         categories,
         setCategories,
-        newCategory,
-        setNewCategory,
+
         addCategory,
         removeCategory
       }}

@@ -7,7 +7,7 @@ import { useContext } from "react";
 
 export default function CategoryInput() {
     
-    const {newCategory, setNewCategory, addCategory } =   useContext(TaskContext);
+    const { addCategory } =   useContext(TaskContext);
     const {
       register,
       handleSubmit,
@@ -17,24 +17,23 @@ export default function CategoryInput() {
     });
 
     const onSubmit = async (data) => {
-      setNewCategory("")
       console.log('送信データ:', data);
-      await addCategory();
+      await addCategory(data);
     };
     return (
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
+            <form 
+                onSubmit={handleSubmit(onSubmit)} 
+                className="flex flex-col gap-4 p-4 bg-white rounded shadow mt-1 mb-4">
               <input
                 {...register('title')}
                 type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
                 className="border p-2 rounded mr-2"
                 placeholder="新しいカテゴリ名"
               />
               {errors.title && (
                 <p style={{ color: 'red' }}>{errors.title.message}</p>
               )}
-              <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+              <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">
                 カテゴリ追加
               </button>
             </form>

@@ -1,13 +1,11 @@
 import { useMemo ,useState} from "react";
-
 import { updateTaskAPI } from "../services/TaskService";
 import { useContext } from "react";
 import { TaskContext } from "../context/TaskContext";
 import { deleteTaskAPI ,updateCategoryAPI} from "../services/TaskService"; 
 import {showSuccess,showError} from "../utils/toast";
 import { updateTaskSchema,updatePrioritySchema,updateDueDateSchema,updateCompletedSchema,addCategorySchema } from '../utils/schema';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import {Trash2} from "lucide-react";
 import TaskItem from "./TaskItem";
 import { useAuth } from '../context/AuthContext';
 
@@ -149,7 +147,7 @@ const filteredTasks = useMemo(() => {
 
 
 return (
-  <div>
+  <div className="p-4 animate-slideDown">
     {categories.map((cat) => {
       const tasksInCategory = filteredTasks.filter((task) => {
         const id = task.category?._id;
@@ -160,7 +158,7 @@ return (
 
       return (
         <div key={cat._id + "input"} className="mb-4">
-          <div className="flex items-center justify-between px-2 mt-4">
+          <div className="flex items-center justify-between px-2 mt-4 ">
             {editingCategoryId === cat._id  ? (
               <>
                 <input
@@ -196,9 +194,9 @@ return (
                 {cat.title !== "未分類" &&  (!user || cat.user === user.id) &&(
                   <button
                     onClick={() => removeCategory(cat._id, cat.title)}
-                    className="text-red-500 text-sm"
+                    className=" text-sm text-red-500 hover:text-red-700"
                   >
-                    <FontAwesomeIcon icon={faTrash} />
+                    <Trash2 size={14} />
                   </button>
                 )}
               </>

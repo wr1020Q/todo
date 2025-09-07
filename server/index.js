@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import path from 'path'
-import { fileURLToPath } from 'url';
 import { success, error ,wrapperAsync} from './utils/responseWrapper.js';
 import { tasksSchema ,partialTaskSchema} from './schemas.js';
 import ExpressError from './utils/expressError.js';
@@ -20,13 +18,19 @@ import xssClean from 'xss-clean';
 
 dotenv.config()
 const app = express();
-const PORT = process.env.PORT || 3000;
-const URL = process.env.URL;
-console.log("URL,",URL)
+
+
+const allowedOrigin = process.env.NODE_ENV === "production"
+  ? process.env.URL
+  : "http://localhost:5000";
+
+const allowedPort = process.env.NODE_ENV === "production"
+  ? process.env.PORT
+  : 3000;
 
 app.use(express.json());
 app.use(cors({
-  origin: URL, 
+  origin: allowedOrigin, 
   credentials: true,               
 }));
 app.use(express.urlencoded({ extended: true }));
@@ -66,6 +70,13 @@ mongoose.connect(mongoUri, {
 })
 .then(() => console.log('MongoDB に接続成功！'))
 .catch((err) => console.error('接続エラー:', err));
+
+// mongoose.connect("mongodb://localhost:27017/todo-app", {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// })
+// .then(() => console.log('MongoDB に接続成功！'))
+// .catch((err) => console.error('接続エラー:', err));
 
 const init = async () => {
   try {
@@ -198,6 +209,6 @@ app.all('*', (req, res, next) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-    console.log(`${PORT}で待ち受け中`)
+app.listen(allowedPort, () => {
+    console.log(`${allowedPort}で待ち受け中`)
 });

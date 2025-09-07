@@ -1,78 +1,85 @@
 import { TaskContext } from "../context/TaskContext"; 
 import TaskList from "./TaskList";
-import { useMemo, useState ,useContext } from "react";
+import CategoriesList from "./CategoriesList";
+import { useMemo,useContext } from "react";
+import { SortAsc, SortDesc, Star, Clock } from "lucide-react";
 
-export default function TaskListWrapper({categories}) {
+import TaskInput from "./TaskInput";
+import Select from 'react-select';
+
+
+export default function TaskListWrapper({categories,tasks}) {
   const { state, dispatch } = useContext(TaskContext);
-  const { tasks, categoryFilter, sortBy } = state;
-  const [searchQuery, setSearchQuery] = useState("");
+  const { categoryFilter, sortBy } = state;
 
-  const filteredTasks = useMemo(() => {
-    const result = Array.isArray(tasks)
-      ?tasks.filter((task) => {
-      const text = (task.text ?? "").toLowerCase();
-      const keyword = searchQuery.toLowerCase();
-      const matchesCategory = Array.isArray(categoryFilter) ? categoryFilter.length === 0 || 
-        categoryFilter.some((f) => {
-        const taskCatId = task.category?._id ?? task.category;
-        return String(f) === String(taskCatId);
-      })
-      : true;
-      const matchesKeyword = searchQuery.trim() === "" || text.includes(keyword);
-      return matchesCategory && matchesKeyword;
-    }):[];
-
-    return result;
-  }, [state.tasks, categoryFilter, searchQuery]);
+  const options = [
+    { value: "deadlineAsc", label: "締切が近い順", icon: <SortAsc size={16} /> },
+    { value: "deadlineDesc", label: "締切が遠い順", icon: <SortDesc size={16} /> },
+    { value: "priority", label: "優先度が高い順", icon: <Star size={16} /> },
+    { value: "createdAtDesc", label: "作成日が新しい順", icon: <Clock size={16} /> },
+  ];
 
 
   console.log("受け取ったWLIST内 tasks:", tasks);
   console.log("受け取ったWLIST内 categories:", categories);
   console.log("受け取ったWLIST内 categoryFilter:", categoryFilter);
-  console.log("filteredTasks W:", filteredTasks);
 
   const sortedTasks = useMemo(() => {
-    return [...filteredTasks].sort((a, b) => {
+    return [...tasks].sort((a, b) => {
       switch (sortBy) {
         case "deadlineAsc":
           return new Date(a.dueDate) - new Date(b.dueDate);
         case "deadlineDesc":
           return new Date(b.dueDate) - new Date(a.dueDate);
         case "priority":
-          return b.priority - a.priority;
+          return a.priority - b.priority;
         case "createdAtDesc":
           return new Date(b.id) - new Date(a.id);
         default:
           return 0;
       }
     });
-  }, [filteredTasks, sortBy]);
+  }, [tasks, sortBy]);
   
-    console.log("sortedTasks W:", sortedTasks);
   return (
     <>
-      <input
-        type="text"
-        placeholder="タスク名で検索"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="border p-2 rounded mb-2"
-      />
-      <select
-        value={sortBy}
-        onChange={(e) =>dispatch({ type: "SET_SORT", payload: e.target.value })}
-      >
-        <option value="deadlineAsc">締切が近い順</option>
-        <option value="deadlineDesc">締切が遠い順</option>
-        <option value="priority">優先度が高い順</option>
-        <option value="createdAtDesc">作成日が新しい順</option>
-      </select>
+    <div className="flex items-center gap-4 mb-2  justify-end ">
+    <Select
+      options={options}
+      value={options.find((option) => option.value === sortBy) || null}
+      onChange={(selectedOption) => {
+        if (selectedOption) {
+          dispatch({ type: "SET_SORT", payload: selectedOption.value });
+        }
+      }}
+      getOptionLabel={option => (
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {option.icon}
+          <span style={{ marginLeft: 8 }}>{option.label}</span>
+        </div>
+      )}
+      isSearchable={false}
+      placeholder="並び替え"
+      className="w-64 text-sm fadeSlideRight"
+    />
 
-      <TaskList
-        tasks={sortedTasks}
-        categories = {categories}
-        setEditText={(text) => dispatch({ type: "START_EDITING", payload: { id: null, text } })}
-      />
+        <TaskInput categories={categories}/>
+      </div>
+
+      <div className="flex items-center gap-4  justify-end ">
+          <CategoriesList categories={categories}/>
+      </div>
+
+        <TaskList
+          tasks={sortedTasks}
+          categories = {categories}
+          setEditText={(text) => dispatch({ type: "START_EDITING", payload: { id: null, text } })}
+        />
     </>
+
+
+
+
+
   );  
 }
