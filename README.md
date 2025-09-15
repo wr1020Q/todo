@@ -68,3 +68,47 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# フルスタックToDoアプリ
+
+「Reactで作ったSPAのタスク管理アプリ。カテゴリー整理、締切・優先度管理を搭載。バックエンドはNode.js + MongoDBで構築し、フルスタック開発のスキルを詰め込みました。」
+
+### 技術スタック
+Frontend: React, Tailwind CSS, React Router
+Backend: Node.js, Express
+Database: MongoDB (Railway)
+Deployment: Vercel (Frontend), Render (Backend)
+
+### 主な機能
+・タスク作成・編集・削除
+・締切・優先度・カテゴリー分け
+
+### デモ・コードリンク
+フロント（Vercel）: https://todo-ten-ivory.vercel.app/
+GitHubリポジトリ: https://github.com/username/todo-app
+
+### 開発で学んだこと・工夫ポイント
+・React Hook Form + Yup でフォームバリデーション
+・JWT認証の実装と安全なトークン管理
+・実務を想定して、フロントとバックエンドの分離デプロイを行った
+・Todoアプリなのでどんな人が使えるようにデザインをミニマル・ジェンダーレスにした 
+
+### 改善したいポイント
+- 設計書を書いてからコードの実装に入ればよかった
+- 本番環境と開発環境の違いを理解して開発すればデプロイで時間がかからなかった
+- 日々学んだことを記録して発信・復習すればよかった
+- チームで開発することを想定して、Git管理をすればよかった（ブランチを切る・プルリクエストをしてからマージする等）
+
+  
+### 追加したい機能
+- タイマーと連携してタスクにどの程度時間がかかったか記録できるようにしたい
+- 機械学習やAIを搭載して、タスクを入力するとタスクを実行するのにかかる時間を予測してくれるようにしたい
+- カレンダーと連携してタスクを整理して見えるようにしたい
+
+### さらに学んでみたいこと
+- dockerで開発してデプロイしたい
+- テストコードを導入して品質を高めたい
+- CI/CDを取り入れて開発体験を改善したい
+- 今回はJWT認証だったが、セッション認証も体験したい
+- セキュリティについてもっと学んで安全なアプリを作成したい
+- UIの設計をFigmaでやってみたい
